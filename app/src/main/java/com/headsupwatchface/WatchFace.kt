@@ -7,11 +7,14 @@ import android.content.IntentFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
+import android.support.wearable.complications.ComplicationData
+import android.support.wearable.complications.SystemProviders
 import androidx.core.content.ContextCompat
 import android.support.wearable.watchface.CanvasWatchFaceService
 import android.support.wearable.watchface.WatchFaceService
@@ -76,11 +79,17 @@ class WatchFace : CanvasWatchFaceService() {
 
         private var mRegisteredTimeZoneReceiver = false
 
-        private var mXOffset: Float = 0F
-        private var mYOffset: Float = 0F
+        private val mDigitalOffset = PointF(resources.getDimension(R.dimen.digital_x_offset),
+            resources.getDimension(R.dimen.digital_y_offset))
+        private val mMinutesOffset = PointF(resources.getDimension(R.dimen.minutes_seconds_x_offset),
+            resources.getDimension(R.dimen.minutes_y_offset))
+        private val mSecondsOffset = PointF(resources.getDimension(R.dimen.minutes_seconds_x_offset),
+            resources.getDimension(R.dimen.seconds_y_offset))
 
         private lateinit var mBackgroundPaint: Paint
-        private lateinit var mTextPaint: Paint
+        private lateinit var mHourPaint: Paint
+        private lateinit var mMinutePaint: Paint
+        private lateinit var mSecondPaint: Paint
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -99,6 +108,13 @@ class WatchFace : CanvasWatchFaceService() {
             }
         }
 
+        /**
+         * Complication setup
+         */
+        private val mLeftComplicationId = 0
+        private val mRightComplicationId = 1
+        private val mComplicationIDs = arrayOf(mLeftComplicationId, mRightComplicationId)
+
         override fun onCreate(holder: SurfaceHolder) {
             super.onCreate(holder)
 
@@ -111,7 +127,7 @@ class WatchFace : CanvasWatchFaceService() {
             mCalendar = Calendar.getInstance()
 
             val resources = this@WatchFace.resources
-            mYOffset = resources.getDimension(R.dimen.digital_y_offset)
+            mDigitalOffset.y = resources.getDimension(R.dimen.digital_y_offset)
 
             // Initializes background.
             mBackgroundPaint = Paint().apply {
@@ -119,11 +135,29 @@ class WatchFace : CanvasWatchFaceService() {
             }
 
             // Initializes Watch Face.
-            mTextPaint = Paint().apply {
-                typeface = NORMAL_TYPEFACE
-                isAntiAlias = true
-                color = ContextCompat.getColor(applicationContext, R.color.digital_text)
+            mHourPaint = Paint().apply {
+                color = ContextCompat.getColor(applicationContext, R.color.hour_text)
+                textSize = resources.getDimension(R.dimen.digital_text_size_hour)
             }
+            mMinutePaint = Paint().apply {
+                color = ContextCompat.getColor(applicationContext, R.color.minute_text)
+                textSize = resources.getDimension(R.dimen.digital_text_size_min_sec)
+            }
+            mSecondPaint = Paint().apply {
+                color = ContextCompat.getColor(applicationContext, R.color.second_text)
+                textSize = resources.getDimension(R.dimen.digital_text_size_min_sec)
+            }
+            for (paint in arrayOf(mHourPaint, mMinutePaint, mSecondPaint)){
+                paint.apply {
+                    typeface = NORMAL_TYPEFACE
+                    isAntiAlias = true
+                }
+            }
+
+            setDefaultSystemComplicationProvider(mLeftComplicationId,
+                SystemProviders.WATCH_BATTERY, ComplicationData.TYPE_ICON)
+            setDefaultSystemComplicationProvider(mRightComplicationId,
+                SystemProviders.DATE, ComplicationData.TYPE_SHORT_TEXT)
         }
 
         override fun onDestroy() {
@@ -151,7 +185,8 @@ class WatchFace : CanvasWatchFaceService() {
             mAmbient = inAmbientMode
 
             if (mLowBitAmbient) {
-                mTextPaint.isAntiAlias = !inAmbientMode
+                mHourPaint.isAntiAlias = !inAmbientMode
+                mMinutePaint.isAntiAlias = !inAmbientMode
             }
 
             // Whether the timer should be running depends on whether we"re visible (as well as
@@ -194,17 +229,23 @@ class WatchFace : CanvasWatchFaceService() {
             val now = System.currentTimeMillis()
             mCalendar.timeInMillis = now
 
-            val text = if (mAmbient)
-                String.format(
-                    "%d:%02d", mCalendar.get(Calendar.HOUR),
-                    mCalendar.get(Calendar.MINUTE)
+            val hours = String.format("%d", mCalendar.get(Calendar.HOUR))
+            val minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE))
+
+            // Hours are written large on the left
+            canvas.drawText(hours, mDigitalOffset.x, mDigitalOffset.y, mHourPaint)
+            // Minutes written small on the right top
+            canvas.drawText(minutes, mDigitalOffset.x + mMinutesOffset.x,
+                mDigitalOffset.y + mMinutesOffset.y, mMinutePaint)
+
+            // Only ambient mode refreshes often enough for seconds
+            if (!mAmbient) {
+                val seconds = String.format("%02d", mCalendar.get(Calendar.SECOND))
+                canvas.drawText(
+                    seconds, mDigitalOffset.x + mSecondsOffset.x,
+                    mDigitalOffset.y + mSecondsOffset.y, mSecondPaint
                 )
-            else
-                String.format(
-                    "%d:%02d:%02d", mCalendar.get(Calendar.HOUR),
-                    mCalendar.get(Calendar.MINUTE), mCalendar.get(Calendar.SECOND)
-                )
-            canvas.drawText(text, mXOffset, mYOffset, mTextPaint)
+            }
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
@@ -245,24 +286,9 @@ class WatchFace : CanvasWatchFaceService() {
         override fun onApplyWindowInsets(insets: WindowInsets) {
             super.onApplyWindowInsets(insets)
 
-            // Load resources that have alternate values for round watches.
-            val resources = this@WatchFace.resources
-            val isRound = insets.isRound
-            mXOffset = resources.getDimension(
-                if (isRound)
-                    R.dimen.digital_x_offset_round
-                else
-                    R.dimen.digital_x_offset
-            )
-
-            val textSize = resources.getDimension(
-                if (isRound)
-                    R.dimen.digital_text_size_round
-                else
-                    R.dimen.digital_text_size
-            )
-
-            mTextPaint.textSize = textSize
+            // Load resources that have alternate values for round watches here
+//            val resources = this@WatchFace.resources
+//            val isRound = insets.isRound
         }
 
         /**
