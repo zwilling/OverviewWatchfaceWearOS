@@ -45,6 +45,8 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <activity android:name="android.support.wearable.complications.ComplicationHelperActivity"/>
+
 <!--        <service-->
 <!--            android:name=".MyWatchFace"-->
 <!--            android:label="@string/my_analog_name"-->

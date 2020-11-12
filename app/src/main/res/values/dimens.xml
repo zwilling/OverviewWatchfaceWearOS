@@ -8,4 +8,8 @@
     <dimen name="minutes_y_offset">-25dp</dimen>
     <dimen name="seconds_y_offset">-0dp</dimen>
 
+    <!--    offsets from center of the watchface-->
+    <dimen name="complication_size">40dp</dimen>
+    <dimen name="complication_offset_x">25dp</dimen>
+    <dimen name="complication_offset_y">40dp</dimen>
 </resources>

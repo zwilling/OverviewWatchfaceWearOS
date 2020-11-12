@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<drawable
+    class="android.support.wearable.complications.rendering.ComplicationDrawable"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:textColor="#FFFF0000"
+    app:titleColor="#FFFFFFFF"
+    app:borderColor="#BBBBBBBB"
+    app:borderDashGap="5dp"
+    app:borderDashWidth="5dp"
+    app:borderRadius="50dp"
+    app:borderStyle="none"
+    app:borderWidth="1dp">
+    <ambient
+        app:textColor="#BBBBBBBB" />
+</drawable>
