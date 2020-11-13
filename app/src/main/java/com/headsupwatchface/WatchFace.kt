@@ -100,7 +100,7 @@ class WatchFace : CanvasWatchFaceService() {
                     resources.getDimension(R.dimen.complication_offset_y))
             ),
             1 to ComplicationSetup(
-                SystemProviders.DATE,
+                SystemProviders.NEXT_EVENT,
                 ComplicationData.TYPE_SHORT_TEXT,
                 resources.getDrawable(R.drawable.complication_layout, null) as ComplicationDrawable,
                 PointF(resources.getDimension(R.dimen.complication_offset_x),
@@ -257,6 +257,7 @@ class WatchFace : CanvasWatchFaceService() {
             super.onComplicationDataUpdate(watchFaceComplicationId, data)
 
             mComplications[watchFaceComplicationId]?.drawable?.setComplicationData(data)
+            println("Complication update $watchFaceComplicationId: $data")
         }
 
         override fun onDraw(canvas: Canvas, bounds: Rect) {
