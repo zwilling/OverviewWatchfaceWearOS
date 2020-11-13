@@ -277,8 +277,13 @@ class WatchFace : CanvasWatchFaceService() {
                         else String.format("%d", mCalendar.get(Calendar.HOUR_OF_DAY))
             val minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE))
 
+            // if hours have two digits we have to draw from further left
+            val hourXOffset =
+                    if (hours.length > 1) mDigitalOffset.x -
+                            resources.getDimension(R.dimen.digital_x_two_digit_correction)
+                    else mDigitalOffset.x
             // Hours are written large on the left
-            canvas.drawText(hours, mDigitalOffset.x, mDigitalOffset.y, mHourPaint)
+            canvas.drawText(hours, hourXOffset, mDigitalOffset.y, mHourPaint)
             // Minutes written small on the right top
             canvas.drawText(minutes, mDigitalOffset.x + mMinutesOffset.x,
                 mDigitalOffset.y + mMinutesOffset.y, mMinutePaint)
