@@ -83,6 +83,7 @@ class WatchFace : CanvasWatchFaceService() {
         private val mSecondsOffset = PointF(resources.getDimension(R.dimen.minutes_seconds_x_offset),
             resources.getDimension(R.dimen.seconds_y_offset))
 
+
         private lateinit var mBackgroundPaint: Paint
         private lateinit var mHourPaint: Paint
         private lateinit var mMinutePaint: Paint
@@ -110,6 +111,15 @@ class WatchFace : CanvasWatchFaceService() {
                     resources.getDimension(R.dimen.complication_offset_y))
             ),
         )
+
+        inner class TimelineSetup(
+                val length: Float = resources.getDimension(R.dimen.timeline_length),
+                val arrowLength: Float = resources.getDimension(R.dimen.timeline_arrow_length),
+                val nowBarX: Float = resources.getDimension(R.dimen.timeline_now_bar_x),
+                val nowBarSize: Float = resources.getDimension(R.dimen.timeline_now_bar_size),
+                val nowBarThickness: Float = resources.getDimension(R.dimen.timeline_now_bar_thickness),
+        )
+        val mTimeline = TimelineSetup()
 
         // Configurable properties
         private var m12HourFormat = false
@@ -272,36 +282,14 @@ class WatchFace : CanvasWatchFaceService() {
                 )
             }
 
-            // Draw digital time
-            val now = System.currentTimeMillis()
-            mCalendar.timeInMillis = now
+            drawOverviewTimeline(canvas)
 
-            val hours = if (m12HourFormat) String.format("%d", mCalendar.get(Calendar.HOUR))
-                        else String.format("%d", mCalendar.get(Calendar.HOUR_OF_DAY))
-            val minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE))
-
-            // if hours have two digits we have to draw from further left
-            val hourXOffset =
-                    if (hours.length > 1) mDigitalOffset.x -
-                            resources.getDimension(R.dimen.digital_x_two_digit_correction)
-                    else mDigitalOffset.x
-            // Hours are written large on the left
-            canvas.drawText(hours, mCenterX + hourXOffset, mCenterY + mDigitalOffset.y, mHourPaint)
-            // Minutes written small on the right top
-            canvas.drawText(minutes, mCenterX + mDigitalOffset.x + mMinutesOffset.x,
-                    mCenterY + mDigitalOffset.y + mMinutesOffset.y, mMinutePaint)
-
-            // Only ambient mode refreshes often enough for seconds
-            if (!mAmbient) {
-                val seconds = String.format("%02d", mCalendar.get(Calendar.SECOND))
-                canvas.drawText(seconds, mCenterX + mDigitalOffset.x + mSecondsOffset.x,
-                        mCenterY + mDigitalOffset.y + mSecondsOffset.y, mSecondPaint
-                )
-            }
-
+            // draw complications
             mComplications.values.forEach {
                 it.drawable.draw(canvas)
             }
+
+            drawDigitalDisplay(canvas)
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
@@ -381,6 +369,58 @@ class WatchFace : CanvasWatchFaceService() {
          */
         private fun shouldTimerBeRunning(): Boolean {
             return isVisible && !isInAmbientMode
+        }
+
+        /**
+         * Draws the time on the display canvas
+         */
+        private fun drawDigitalDisplay(canvas: Canvas) {
+            val now = System.currentTimeMillis()
+            mCalendar.timeInMillis = now
+
+            val hours = if (m12HourFormat) String.format("%d", mCalendar.get(Calendar.HOUR))
+            else String.format("%d", mCalendar.get(Calendar.HOUR_OF_DAY))
+            val minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE))
+
+            // if hours have two digits we have to draw from further left
+            val hourXOffset =
+                    if (hours.length > 1) mDigitalOffset.x -
+                            resources.getDimension(R.dimen.digital_x_two_digit_correction)
+                    else mDigitalOffset.x
+            // Hours are written large on the left
+            canvas.drawText(hours, mCenterX + hourXOffset, mCenterY + mDigitalOffset.y, mHourPaint)
+            // Minutes written small on the right top
+            canvas.drawText(minutes, mCenterX + mDigitalOffset.x + mMinutesOffset.x,
+                    mCenterY + mDigitalOffset.y + mMinutesOffset.y, mMinutePaint)
+
+            // Only ambient mode refreshes often enough for seconds
+            if (!mAmbient) {
+                val seconds = String.format("%02d", mCalendar.get(Calendar.SECOND))
+                canvas.drawText(seconds, mCenterX + mDigitalOffset.x + mSecondsOffset.x,
+                        mCenterY + mDigitalOffset.y + mSecondsOffset.y, mSecondPaint
+                )
+            }
+        }
+
+        /**
+         * Draws the overview timeline on the display canvas
+         */
+        private fun drawOverviewTimeline(canvas: Canvas) {
+            val paint = mMinutePaint
+
+            // Timeline
+            canvas.drawLine(0F, mCenterY, mTimeline.length, mCenterY, paint)
+            // Arrow end
+            canvas.drawLine(mTimeline.length, mCenterY,
+                    mTimeline.length - mTimeline.arrowLength, mCenterY  + mTimeline.arrowLength, paint)
+            canvas.drawLine(mTimeline.length, mCenterY,
+                    mTimeline.length - mTimeline.arrowLength, mCenterY  - mTimeline.arrowLength, paint)
+            // Bar indicating now
+            val nowBar = RectF(mTimeline.nowBarX - mTimeline.nowBarThickness,
+                    mCenterY - mTimeline.nowBarSize / 2.0F,
+                    mTimeline.nowBarX,
+                    mCenterY + mTimeline.nowBarSize / 2.0F)
+            canvas.drawRect(nowBar, paint)
         }
 
         /**
