@@ -108,6 +108,9 @@ class WatchFace : CanvasWatchFaceService() {
             ),
         )
 
+        // Configurable properties
+        private var m12HourFormat = false
+
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
@@ -270,7 +273,8 @@ class WatchFace : CanvasWatchFaceService() {
             val now = System.currentTimeMillis()
             mCalendar.timeInMillis = now
 
-            val hours = String.format("%d", mCalendar.get(Calendar.HOUR))
+            val hours = if (m12HourFormat) String.format("%d", mCalendar.get(Calendar.HOUR))
+                        else String.format("%d", mCalendar.get(Calendar.HOUR_OF_DAY))
             val minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE))
 
             // Hours are written large on the left
