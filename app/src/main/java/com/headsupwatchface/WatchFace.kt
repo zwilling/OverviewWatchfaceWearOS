@@ -73,6 +73,9 @@ class WatchFace : CanvasWatchFaceService() {
 
         private var mRegisteredTimeZoneReceiver = false
 
+        private var mCenterX = 0F;
+        private var mCenterY = 0F;
+
         private val mDigitalOffset = PointF(resources.getDimension(R.dimen.digital_x_offset),
             resources.getDimension(R.dimen.digital_y_offset))
         private val mMinutesOffset = PointF(resources.getDimension(R.dimen.minutes_seconds_x_offset),
@@ -257,7 +260,6 @@ class WatchFace : CanvasWatchFaceService() {
             super.onComplicationDataUpdate(watchFaceComplicationId, data)
 
             mComplications[watchFaceComplicationId]?.drawable?.setComplicationData(data)
-            println("Complication update $watchFaceComplicationId: $data")
         }
 
         override fun onDraw(canvas: Canvas, bounds: Rect) {
@@ -284,17 +286,16 @@ class WatchFace : CanvasWatchFaceService() {
                             resources.getDimension(R.dimen.digital_x_two_digit_correction)
                     else mDigitalOffset.x
             // Hours are written large on the left
-            canvas.drawText(hours, hourXOffset, mDigitalOffset.y, mHourPaint)
+            canvas.drawText(hours, mCenterX + hourXOffset, mCenterY + mDigitalOffset.y, mHourPaint)
             // Minutes written small on the right top
-            canvas.drawText(minutes, mDigitalOffset.x + mMinutesOffset.x,
-                mDigitalOffset.y + mMinutesOffset.y, mMinutePaint)
+            canvas.drawText(minutes, mCenterX + mDigitalOffset.x + mMinutesOffset.x,
+                    mCenterY + mDigitalOffset.y + mMinutesOffset.y, mMinutePaint)
 
             // Only ambient mode refreshes often enough for seconds
             if (!mAmbient) {
                 val seconds = String.format("%02d", mCalendar.get(Calendar.SECOND))
-                canvas.drawText(
-                    seconds, mDigitalOffset.x + mSecondsOffset.x,
-                    mDigitalOffset.y + mSecondsOffset.y, mSecondPaint
+                canvas.drawText(seconds, mCenterX + mDigitalOffset.x + mSecondsOffset.x,
+                        mCenterY + mDigitalOffset.y + mSecondsOffset.y, mSecondPaint
                 )
             }
 
@@ -306,16 +307,16 @@ class WatchFace : CanvasWatchFaceService() {
         override fun onSurfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
 
-            val centerX = width / 2F;
-            val centerY = height / 2F;
+            mCenterX = width / 2F;
+            mCenterY = height / 2F;
 
             val complicationSize = resources.getDimension(R.dimen.complication_size)
             mComplications.values.forEach {
                 it.drawable.bounds = Rect(
-                    (centerX - complicationSize/2 + it.offset.x).toInt(),
-                    (centerY - complicationSize/2 + it.offset.y).toInt(),
-                    (centerX + complicationSize/2 + it.offset.x).toInt(),
-                    (centerY + complicationSize/2 + it.offset.y).toInt(),
+                    (mCenterX - complicationSize/2 + it.offset.x).toInt(),
+                    (mCenterY - complicationSize/2 + it.offset.y).toInt(),
+                    (mCenterX + complicationSize/2 + it.offset.x).toInt(),
+                    (mCenterY + complicationSize/2 + it.offset.y).toInt(),
                 )
             }
         }

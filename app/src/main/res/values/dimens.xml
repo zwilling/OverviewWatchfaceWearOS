@@ -2,8 +2,8 @@
 <resources>
     <dimen name="digital_text_size_hour">60dp</dimen>
     <dimen name="digital_text_size_min_sec">25dp</dimen>
-    <dimen name="digital_x_offset">70dp</dimen>
-    <dimen name="digital_y_offset">100dp</dimen>
+    <dimen name="digital_x_offset">-36dp</dimen>
+    <dimen name="digital_y_offset">-30dp</dimen>
     <dimen name="digital_x_two_digit_correction">32dp</dimen>
     <dimen name="minutes_seconds_x_offset">40dp</dimen>
     <dimen name="minutes_y_offset">-25dp</dimen>
