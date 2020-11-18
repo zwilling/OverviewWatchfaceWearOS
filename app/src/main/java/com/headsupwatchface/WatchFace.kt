@@ -1,14 +1,13 @@
 package com.headsupwatchface
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.app.Activity
+import android.content.*
 import android.graphics.*
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.support.wearable.complications.ComplicationData
+import android.support.wearable.complications.ComplicationHelperActivity
 import android.support.wearable.complications.SystemProviders
 import android.support.wearable.complications.rendering.ComplicationDrawable
 import androidx.core.content.ContextCompat
@@ -255,12 +254,20 @@ class WatchFace : CanvasWatchFaceService() {
                 WatchFaceService.TAP_TYPE_TOUCH_CANCEL -> {
                     // The user has started a different gesture or otherwise cancelled the tap.
                 }
-                WatchFaceService.TAP_TYPE_TAP ->
+                WatchFaceService.TAP_TYPE_TAP -> {
                     // The user has completed the tap gesture.
                     // TODO: Add code to handle the tap gesture.
-                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
-                        .show()
+//                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
+//                        .show()
                     // TODO: handle tap on complication
+
+                    // Start complication choosing intent
+                    val intent = ComplicationHelperActivity.createProviderChooserHelperIntent(
+                            this@WatchFace, ComponentName(this@WatchFace, WatchFace.javaClass),
+                            1, *mComplicationAllowedTypes.toIntArray())
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    startActivity(intent)
+                }
             }
             invalidate()
         }
