@@ -32,7 +32,7 @@
             <!-- Specifying that what should be started on clicking the watch face configuration-->
             <meta-data
                 android:name="com.google.android.wearable.watchface.wearableConfigurationAction"
-                android:value="com.example.android.wearable.watchface.CONFIG_DIGITAL"/>
+                android:value="com.headsupwatchface.CONFIG_DIGITAL"/>
 
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
@@ -47,12 +47,12 @@
 
         <!--    Activity for settings menu    -->
         <activity
-            android:name=".SettingsActivity"
+            android:name=".settings.SettingsActivity"
             android:label="@string/title_activity_settings">
             <intent-filter>
                 <!--    Linking to the watch face configuration   -->
                 <action android:name=
-                    "com.example.android.wearable.watchface.CONFIG_DIGITAL" />
+                    "com.headsupwatchface.CONFIG_DIGITAL" />
                 <category android:name=
                     "com.google.android.wearable.watchface.category.WEARABLE_CONFIGURATION" />
                 <category android:name="android.intent.category.DEFAULT" />

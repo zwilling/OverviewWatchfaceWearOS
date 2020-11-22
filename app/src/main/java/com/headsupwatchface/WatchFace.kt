@@ -46,6 +46,14 @@ class WatchFace : CanvasWatchFaceService() {
          * Handler message id for updating the time periodically in interactive mode.
          */
         private const val MSG_UPDATE_TIME = 0
+
+        val complicationAllowedTypes = listOf<Int>(
+            ComplicationData.TYPE_ICON,
+            ComplicationData.TYPE_SMALL_IMAGE,
+            ComplicationData.TYPE_SHORT_TEXT,
+            ComplicationData.TYPE_RANGED_VALUE,
+            ComplicationData.TYPE_EMPTY,
+        )
     }
 
     override fun onCreateEngine(): Engine {
@@ -88,11 +96,14 @@ class WatchFace : CanvasWatchFaceService() {
         private lateinit var mMinutePaint: Paint
         private lateinit var mSecondPaint: Paint
 
+        /**
+         * Complication setup
+         */
         inner class ComplicationSetup(
             val defaultProvider : Int,
             val defaultType : Int,
             var drawable : ComplicationDrawable,
-            var offset : PointF
+            var offset : PointF,
         )
         private var mComplications = mapOf<Int, ComplicationSetup>(
             0 to ComplicationSetup(
@@ -100,14 +111,14 @@ class WatchFace : CanvasWatchFaceService() {
                 ComplicationData.TYPE_SHORT_TEXT,
                 resources.getDrawable(R.drawable.complication_layout, null) as ComplicationDrawable,
                 PointF(-resources.getDimension(R.dimen.complication_offset_x),
-                    resources.getDimension(R.dimen.complication_offset_y))
+                    resources.getDimension(R.dimen.complication_offset_y)),
             ),
             1 to ComplicationSetup(
                 SystemProviders.NEXT_EVENT,
                 ComplicationData.TYPE_SHORT_TEXT,
                 resources.getDrawable(R.drawable.complication_layout, null) as ComplicationDrawable,
                 PointF(resources.getDimension(R.dimen.complication_offset_x),
-                    resources.getDimension(R.dimen.complication_offset_y))
+                    resources.getDimension(R.dimen.complication_offset_y)),
             ),
         )
 
@@ -139,17 +150,6 @@ class WatchFace : CanvasWatchFaceService() {
                 invalidate()
             }
         }
-
-        /**
-         * Complication setup
-         */
-        private val mComplicationAllowedTypes = listOf<Int>(
-            ComplicationData.TYPE_ICON,
-            ComplicationData.TYPE_SMALL_IMAGE,
-            ComplicationData.TYPE_SHORT_TEXT,
-            ComplicationData.TYPE_RANGED_VALUE,
-            ComplicationData.TYPE_EMPTY,
-        )
 
         override fun onCreate(holder: SurfaceHolder) {
             super.onCreate(holder)
@@ -260,13 +260,6 @@ class WatchFace : CanvasWatchFaceService() {
 //                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
 //                        .show()
                     // TODO: handle tap on complication
-
-                    // Start complication choosing intent
-                    val intent = ComplicationHelperActivity.createProviderChooserHelperIntent(
-                            this@WatchFace, ComponentName(this@WatchFace, WatchFace.javaClass),
-                            1, *mComplicationAllowedTypes.toIntArray())
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    startActivity(intent)
                 }
             }
             invalidate()
