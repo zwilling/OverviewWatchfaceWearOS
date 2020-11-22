@@ -106,14 +106,14 @@ class WatchFace : CanvasWatchFaceService() {
             var offset : PointF,
         )
         private var mComplications = mapOf<Int, ComplicationSetup>(
-            0 to ComplicationSetup(
+            resources.getInteger(R.integer.complication_left) to ComplicationSetup(
                 SystemProviders.WATCH_BATTERY,
                 ComplicationData.TYPE_SHORT_TEXT,
                 resources.getDrawable(R.drawable.complication_layout, null) as ComplicationDrawable,
                 PointF(-resources.getDimension(R.dimen.complication_offset_x),
                     resources.getDimension(R.dimen.complication_offset_y)),
             ),
-            1 to ComplicationSetup(
+            resources.getInteger(R.integer.complication_right) to ComplicationSetup(
                 SystemProviders.NEXT_EVENT,
                 ComplicationData.TYPE_SHORT_TEXT,
                 resources.getDrawable(R.drawable.complication_layout, null) as ComplicationDrawable,

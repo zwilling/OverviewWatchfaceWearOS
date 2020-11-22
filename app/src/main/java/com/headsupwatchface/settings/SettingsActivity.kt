@@ -40,20 +40,10 @@ class SettingsActivity : Activity() {
 
         // For buttons we have to define what happens on a tap
         mButtonComplicationLeft.setOnClickListener {
-            // Start complication choosing intent
-            val intent = ComplicationHelperActivity.createProviderChooserHelperIntent(
-                this, ComponentName(this, WatchFace::class.java),
-                0, *WatchFace.complicationAllowedTypes.toIntArray())
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
+            chooseComplicationDialog(resources.getInteger(R.integer.complication_left))
         }
         mButtonComplicationRight.setOnClickListener {
-            // Start complication choosing intent
-            val intent = ComplicationHelperActivity.createProviderChooserHelperIntent(
-                this, ComponentName(this, WatchFace::class.java),
-                1, *WatchFace.complicationAllowedTypes.toIntArray())
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
+            chooseComplicationDialog(resources.getInteger(R.integer.complication_right))
         }
 
         // For the switch, we set the starting position and what happens on change
@@ -66,6 +56,19 @@ class SettingsActivity : Activity() {
             }
         }
 
+    }
+
+    /**
+     * Starting the activity for the complication choosing intent (provided by wear os)
+     */
+    private fun chooseComplicationDialog(complication_id : Int) {
+        // Start complication choosing intent
+        val intent = ComplicationHelperActivity.createProviderChooserHelperIntent(
+                this, ComponentName(this, WatchFace::class.java),
+                complication_id, *WatchFace.complicationAllowedTypes.toIntArray())
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+        startActivity(intent)
     }
 }
 
