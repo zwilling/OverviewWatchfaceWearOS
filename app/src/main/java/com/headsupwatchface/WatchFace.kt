@@ -1,13 +1,11 @@
 package com.headsupwatchface
 
-import android.app.Activity
 import android.content.*
 import android.graphics.*
 import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import android.support.wearable.complications.ComplicationData
-import android.support.wearable.complications.ComplicationHelperActivity
 import android.support.wearable.complications.SystemProviders
 import android.support.wearable.complications.rendering.ComplicationDrawable
 import androidx.core.content.ContextCompat
@@ -15,7 +13,6 @@ import android.support.wearable.watchface.CanvasWatchFaceService
 import android.support.wearable.watchface.WatchFaceService
 import android.support.wearable.watchface.WatchFaceStyle
 import android.view.SurfaceHolder
-import android.widget.Toast
 
 import java.lang.ref.WeakReference
 import java.util.Calendar
@@ -47,7 +44,7 @@ class WatchFace : CanvasWatchFaceService() {
          */
         private const val MSG_UPDATE_TIME = 0
 
-        val complicationAllowedTypes = listOf<Int>(
+        val complicationAllowedTypes = listOf(
             ComplicationData.TYPE_ICON,
             ComplicationData.TYPE_SMALL_IMAGE,
             ComplicationData.TYPE_SHORT_TEXT,
@@ -77,6 +74,9 @@ class WatchFace : CanvasWatchFaceService() {
     inner class Engine : CanvasWatchFaceService.Engine() {
 
         private lateinit var mCalendar: Calendar
+
+        private val mSharedPreferences = getSharedPreferences(
+                getString(R.string.preferences_file_key), Context.MODE_PRIVATE)
 
         private var mRegisteredTimeZoneReceiver = false
 
@@ -131,9 +131,6 @@ class WatchFace : CanvasWatchFaceService() {
         )
         val mTimeline = TimelineSetup()
 
-        // Configurable properties
-        private var m12HourFormat = false
-
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
@@ -161,6 +158,8 @@ class WatchFace : CanvasWatchFaceService() {
             )
 
             mCalendar = Calendar.getInstance()
+
+            populateDefaultPreferences()
 
             val resources = this@WatchFace.resources
             mDigitalOffset.y = resources.getDimension(R.dimen.digital_y_offset)
@@ -378,8 +377,9 @@ class WatchFace : CanvasWatchFaceService() {
             val now = System.currentTimeMillis()
             mCalendar.timeInMillis = now
 
-            val hours = if (m12HourFormat) String.format("%d", mCalendar.get(Calendar.HOUR))
-            else String.format("%d", mCalendar.get(Calendar.HOUR_OF_DAY))
+            val hours = if (mSharedPreferences.getBoolean(getString(R.string.preference_hour_format_12_key), false))
+                String.format("%d", mCalendar.get(Calendar.HOUR))
+                else String.format("%d", mCalendar.get(Calendar.HOUR_OF_DAY))
             val minutes = String.format("%02d", mCalendar.get(Calendar.MINUTE))
 
             // if hours have two digits we have to draw from further left
@@ -432,6 +432,19 @@ class WatchFace : CanvasWatchFaceService() {
                 val timeMs = System.currentTimeMillis()
                 val delayMs = INTERACTIVE_UPDATE_RATE_MS - timeMs % INTERACTIVE_UPDATE_RATE_MS
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs)
+            }
+        }
+
+        /**
+         * Checking the preferences if all required values are there and set default values if not
+         */
+        private fun populateDefaultPreferences() {
+            with (mSharedPreferences.edit()){
+                val hourFormat = mSharedPreferences.getBoolean(getString(R.string.preference_hour_format_12_key)
+                        , resources.getBoolean(R.bool.hour_format_12_default))
+                putBoolean(getString(R.string.preference_hour_format_12_key), hourFormat)
+
+                apply()
             }
         }
     }

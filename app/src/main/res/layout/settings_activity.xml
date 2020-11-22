@@ -33,4 +33,11 @@
         android:text="@string/settings_button_complication_right"
         android:textAlignment="center" />
 
+    <Switch
+        android:id="@+id/hour_format_12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/settings_12_hour_format_switch" />
+
 </LinearLayout>
