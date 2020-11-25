@@ -95,6 +95,9 @@ class WatchFace : CanvasWatchFaceService() {
         private lateinit var mHourPaint: Paint
         private lateinit var mMinutePaint: Paint
         private lateinit var mSecondPaint: Paint
+        private lateinit var mTimeLineTextPaint: Paint
+
+        private lateinit var mTimelineDrawer: TimelineDrawer
 
         /**
          * Complication setup
@@ -123,7 +126,6 @@ class WatchFace : CanvasWatchFaceService() {
         )
 
         private val mTimeline = Timeline(resources)
-        private val mTimelineDrawer = TimelineDrawer(resources)
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -176,7 +178,12 @@ class WatchFace : CanvasWatchFaceService() {
                 color = ContextCompat.getColor(applicationContext, R.color.second_text)
                 textSize = resources.getDimension(R.dimen.digital_text_size_min_sec)
             }
-            for (paint in arrayOf(mHourPaint, mMinutePaint, mSecondPaint)){
+            mTimeLineTextPaint = Paint().apply {
+                color = ContextCompat.getColor(applicationContext, R.color.second_text)
+                textSize = resources.getDimension(R.dimen.hour_mark_font_size)
+            }
+
+            for (paint in arrayOf(mHourPaint, mMinutePaint, mSecondPaint, mTimeLineTextPaint)){
                 paint.apply {
                     typeface = NORMAL_TYPEFACE
                     isAntiAlias = true
@@ -190,9 +197,8 @@ class WatchFace : CanvasWatchFaceService() {
             }
             setActiveComplications(*mComplications.keys.toIntArray())
 
-            mTimelineDrawer.paint = mMinutePaint
-
-            // TODO: add ComplicationProviderChoosing https://developer.android.com/training/wearables/watch-faces/adding-complications#kotlin
+            mTimelineDrawer = TimelineDrawer(resources, paintDefault = mMinutePaint,
+                    paintTimelineText = mTimeLineTextPaint)
         }
 
         override fun onDestroy() {
@@ -223,9 +229,11 @@ class WatchFace : CanvasWatchFaceService() {
             super.onAmbientModeChanged(inAmbientMode)
             mAmbient = inAmbientMode
 
+            // adjust paint antialiasing
             if (mLowBitAmbient) {
-                mHourPaint.isAntiAlias = !inAmbientMode
-                mMinutePaint.isAntiAlias = !inAmbientMode
+                for (paint in listOf(mHourPaint, mMinutePaint, mTimeLineTextPaint)){
+                    paint.isAntiAlias = !inAmbientMode
+                }
             }
 
             // draw only borders in ambient mode

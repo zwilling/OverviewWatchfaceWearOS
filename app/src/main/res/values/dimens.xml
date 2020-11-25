@@ -17,10 +17,12 @@
     <!--    Overview Timeline-->
     <dimen name="timeline_length">200dp</dimen>
     <dimen name="timeline_arrow_length">10dp</dimen>
-    <dimen name="timeline_now_bar_x">25dp</dimen>
+    <dimen name="timeline_now_bar_x">20dp</dimen>
     <dimen name="timeline_now_bar_size">16dp</dimen>
     <dimen name="timeline_now_bar_thickness">3dp</dimen>
 
     <dimen name="hour_mark_size">8dp</dimen>
     <dimen name="hour_mark_thickness">1dp</dimen>
+    <dimen name="hour_mark_font_size">6dp</dimen>
+    <dimen name="hour_mark_text_offset">12dp</dimen>
 </resources>

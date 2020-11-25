@@ -2,6 +2,7 @@ package com.headsupwatchface
 
 import android.content.res.Resources
 import android.graphics.*
+import androidx.core.content.ContextCompat
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -11,8 +12,11 @@ import java.time.LocalDateTime
 class TimelineDrawer (
         val resources: Resources,
         var screenDimensions: ScreenDimensions = ScreenDimensions(0,0),
-        var paint: Paint = Paint(),
+        var paintDefault: Paint,
+        var paintTimelineText: Paint,
 ){
+    private var mAmbient: Boolean = false
+
     private val mTimeScope = Duration.ofHours(resources.getInteger(R.integer.timeline_scope).toLong())
 
     private val mLength: Float = resources.getDimension(R.dimen.timeline_length)
@@ -34,13 +38,13 @@ class TimelineDrawer (
     fun draw(canvas: Canvas, timeline: Timeline, ambient: Boolean){
 
         // The line itself
-        canvas.drawLine(0F, mCenterY, mLength, mCenterY, paint)
+        canvas.drawLine(0F, mCenterY, mLength, mCenterY, paintDefault)
 
         // Arrow end
         canvas.drawLine(mLength, mCenterY,
-                mLength - mArrowLength, mCenterY  + mArrowLength, paint)
+                mLength - mArrowLength, mCenterY  + mArrowLength, paintDefault)
         canvas.drawLine(mLength, mCenterY,
-                mLength - mArrowLength, mCenterY  - mArrowLength, paint)
+                mLength - mArrowLength, mCenterY  - mArrowLength, paintDefault)
 
         // Bar indicating now
         drawBarOnTimeline(canvas, mNowBar)
@@ -52,8 +56,8 @@ class TimelineDrawer (
                     size = resources.getDimension(R.dimen.hour_mark_size),
                     thickness = resources.getDimension(R.dimen.hour_mark_thickness)
             )
-            println("Drawing hour mark: $hourMark with $hourIndicatorBar")
             drawBarOnTimeline(canvas, hourIndicatorBar)
+            drawTimeOnMark(canvas, hourMark, resources.getDimension(R.dimen.hour_mark_text_offset))
         }
     }
 
@@ -69,7 +73,7 @@ class TimelineDrawer (
      */
     private fun calculateCoordinateOfTime(time: LocalDateTime): Float{
         val timeDistance = Duration.between(LocalDateTime.now(), time)
-        val pixelDistFrom0 = timeDistance.toMillis().toFloat() / mTimeScope.toMillis().toFloat() * mLength
+        val pixelDistFrom0 = timeDistance.toMillis().toFloat() / mTimeScope.toMillis().toFloat() * (mLength - mNowBar.x)
         return pixelDistFrom0 + mNowBar.x
     }
 
@@ -81,6 +85,17 @@ class TimelineDrawer (
                 mCenterY - timelineBar.size / 2.0F,
                 timelineBar.x + timelineBar.thickness / 2.0F,
                 mCenterY + timelineBar.size / 2.0F)
-        canvas.drawRect(barRect, paint)
+        canvas.drawRect(barRect, paintDefault)
+    }
+
+    /**
+     * Draws a tiny time as number hint on the timeline
+     * @param offset Offset above or below the timeline
+     */
+    private fun drawTimeOnMark(canvas: Canvas, time: LocalDateTime, offset: Float){
+        val text = time.hour.toString()
+        val xPos = calculateCoordinateOfTime(time) - text.length / 4F * paintTimelineText.textSize
+        val yPos = mCenterY + offset
+        canvas.drawText(text, xPos, yPos, paintTimelineText)
     }
 }
