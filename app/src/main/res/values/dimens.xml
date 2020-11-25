@@ -21,4 +21,6 @@
     <dimen name="timeline_now_bar_size">16dp</dimen>
     <dimen name="timeline_now_bar_thickness">3dp</dimen>
 
+    <dimen name="hour_mark_size">8dp</dimen>
+    <dimen name="hour_mark_thickness">1dp</dimen>
 </resources>
