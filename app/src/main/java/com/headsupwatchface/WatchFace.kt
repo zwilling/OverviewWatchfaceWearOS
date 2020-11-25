@@ -80,8 +80,8 @@ class WatchFace : CanvasWatchFaceService() {
 
         private var mRegisteredTimeZoneReceiver = false
 
-        private var mCenterX = 0F;
-        private var mCenterY = 0F;
+        private var mCenterX = 0F
+        private var mCenterY = 0F
 
         private val mDigitalOffset = PointF(resources.getDimension(R.dimen.digital_x_offset),
             resources.getDimension(R.dimen.digital_y_offset))
@@ -105,7 +105,7 @@ class WatchFace : CanvasWatchFaceService() {
             var drawable : ComplicationDrawable,
             var offset : PointF,
         )
-        private var mComplications = mapOf<Int, ComplicationSetup>(
+        private var mComplications = mapOf(
             resources.getInteger(R.integer.complication_left) to ComplicationSetup(
                 SystemProviders.WATCH_BATTERY,
                 ComplicationData.TYPE_SHORT_TEXT,
@@ -122,14 +122,8 @@ class WatchFace : CanvasWatchFaceService() {
             ),
         )
 
-        inner class TimelineSetup(
-                val length: Float = resources.getDimension(R.dimen.timeline_length),
-                val arrowLength: Float = resources.getDimension(R.dimen.timeline_arrow_length),
-                val nowBarX: Float = resources.getDimension(R.dimen.timeline_now_bar_x),
-                val nowBarSize: Float = resources.getDimension(R.dimen.timeline_now_bar_size),
-                val nowBarThickness: Float = resources.getDimension(R.dimen.timeline_now_bar_thickness),
-        )
-        val mTimeline = TimelineSetup()
+        private val mTimeline = Timeline(resources)
+        private val mTimelineDrawer = TimelineDrawer(resources)
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -195,6 +189,8 @@ class WatchFace : CanvasWatchFaceService() {
                 complicationSetup.drawable.setContext(this@WatchFace)
             }
             setActiveComplications(*mComplications.keys.toIntArray())
+
+            mTimelineDrawer.paint = mMinutePaint
 
             // TODO: add ComplicationProviderChoosing https://developer.android.com/training/wearables/watch-faces/adding-complications#kotlin
         }
@@ -286,7 +282,7 @@ class WatchFace : CanvasWatchFaceService() {
                 )
             }
 
-            drawOverviewTimeline(canvas)
+            mTimelineDrawer.draw(canvas, mTimeline, mAmbient)
 
             // draw complications
             mComplications.values.forEach {
@@ -299,8 +295,9 @@ class WatchFace : CanvasWatchFaceService() {
         override fun onSurfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
 
-            mCenterX = width / 2F;
-            mCenterY = height / 2F;
+            mCenterX = width / 2F
+            mCenterY = height / 2F
+            mTimelineDrawer.updateScreenDimensions(ScreenDimensions(width, height))
 
             val complicationSize = resources.getDimension(R.dimen.complication_size)
             mComplications.values.forEach {
@@ -405,27 +402,6 @@ class WatchFace : CanvasWatchFaceService() {
                         mCenterY + mDigitalOffset.y + mSecondsOffset.y, mSecondPaint
                 )
             }
-        }
-
-        /**
-         * Draws the overview timeline on the display canvas
-         */
-        private fun drawOverviewTimeline(canvas: Canvas) {
-            val paint = mMinutePaint
-
-            // Timeline
-            canvas.drawLine(0F, mCenterY, mTimeline.length, mCenterY, paint)
-            // Arrow end
-            canvas.drawLine(mTimeline.length, mCenterY,
-                    mTimeline.length - mTimeline.arrowLength, mCenterY  + mTimeline.arrowLength, paint)
-            canvas.drawLine(mTimeline.length, mCenterY,
-                    mTimeline.length - mTimeline.arrowLength, mCenterY  - mTimeline.arrowLength, paint)
-            // Bar indicating now
-            val nowBar = RectF(mTimeline.nowBarX - mTimeline.nowBarThickness,
-                    mCenterY - mTimeline.nowBarSize / 2.0F,
-                    mTimeline.nowBarX,
-                    mCenterY + mTimeline.nowBarSize / 2.0F)
-            canvas.drawRect(nowBar, paint)
         }
 
         /**
