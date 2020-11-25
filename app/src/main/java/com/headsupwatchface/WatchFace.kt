@@ -232,6 +232,11 @@ class WatchFace : CanvasWatchFaceService() {
                 mMinutePaint.isAntiAlias = !inAmbientMode
             }
 
+            // draw only borders in ambient mode
+            for (paint in listOf(mHourPaint, mMinutePaint)){
+                paint.style = if (mAmbient) Paint.Style.STROKE else Paint.Style.FILL_AND_STROKE
+            }
+
             mComplications.values.forEach {
                 it.drawable.setInAmbientMode(inAmbientMode)
             }
