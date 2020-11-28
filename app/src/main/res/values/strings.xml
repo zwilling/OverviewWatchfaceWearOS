@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">Heads Up WatchFace</string>
-    <string name="message">Watch face tapped</string>
     <string name="my_analog_name">My Analog</string>
     <string name="my_digital_name">Heads Up</string>
     <string name="preferences_file_key">com.headsupwatchface.PREFERENCES_FILE_KEY</string>
+
+    <!-- Permissions -->
+    <string name="permission_calendar_missing">To allow calendar on timeline enter settings</string>
 
     <!-- Preference Titles -->
     <string name="title_activity_settings">SettingsActivity</string>

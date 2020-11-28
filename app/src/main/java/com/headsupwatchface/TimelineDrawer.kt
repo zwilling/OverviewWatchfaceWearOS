@@ -15,8 +15,6 @@ class TimelineDrawer (
         var paintDefault: Paint,
         var paintTimelineText: Paint,
 ){
-    private var mAmbient: Boolean = false
-
     private val mTimeScope = Duration.ofHours(resources.getInteger(R.integer.timeline_scope).toLong())
 
     private val mLength: Float = resources.getDimension(R.dimen.timeline_length)
