@@ -1,10 +1,12 @@
 package com.headsupwatchface.settings
 
+import android.Manifest
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.wearable.complications.ComplicationHelperActivity
 import android.widget.Button
@@ -26,6 +28,7 @@ class SettingsActivity : Activity() {
     private lateinit var mButtonComplicationLeft : Button
     private lateinit var mButtonComplicationRight : Button
     private lateinit var mSwitch12HourFormat: Switch
+    private lateinit var mSwitchCalendarPermission: Switch
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +40,7 @@ class SettingsActivity : Activity() {
         mButtonComplicationLeft = findViewById(R.id.button_complication_left)
         mButtonComplicationRight = findViewById(R.id.button_complication_right)
         mSwitch12HourFormat = findViewById(R.id.hour_format_12)
+        mSwitchCalendarPermission = findViewById(R.id.calendar_permission)
 
         // For buttons we have to define what happens on a tap
         mButtonComplicationLeft.setOnClickListener {
@@ -56,6 +60,11 @@ class SettingsActivity : Activity() {
             }
         }
 
+        mSwitchCalendarPermission.isChecked = checkSelfPermission(Manifest.permission.READ_CALENDAR) ==
+                PackageManager.PERMISSION_GRANTED
+        mSwitchCalendarPermission.setOnCheckedChangeListener { _, _ ->
+            requestPermissions(arrayOf(Manifest.permission.READ_CALENDAR), 1)
+        }
     }
 
     /**
@@ -69,6 +78,19 @@ class SettingsActivity : Activity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
         startActivity(intent)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        for (index in permissions.indices){
+            when (permissions[index]){
+                Manifest.permission.READ_CALENDAR -> {
+                    // set switch state, so the user sees that the permission is still active
+                    mSwitchCalendarPermission.isChecked = grantResults[index] == PackageManager.PERMISSION_GRANTED
+                }
+            }
+        }
     }
 }
 

@@ -28,4 +28,5 @@
     <string name="settings_button_complication_left">Left complication</string>
     <string name="settings_button_complication_right">Right complication</string>
     <string name="settings_12_hour_format_switch">12 Hour Format</string>
+    <string name="settings_calendar_permission">Calendar permission</string>
 </resources>

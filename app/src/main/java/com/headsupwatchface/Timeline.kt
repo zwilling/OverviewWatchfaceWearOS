@@ -99,6 +99,8 @@ class Timeline (
 
     /**
      * Check if the watch face has all permissions it needs for the timeline
+     * To grant the permission, the user has to go to the settings because this has to be done
+     * from and activity, and a watch face is only a service
      *
      * @param notify: Whether the user should be notified about missing permissions
      * @return: If all permissions were granted
