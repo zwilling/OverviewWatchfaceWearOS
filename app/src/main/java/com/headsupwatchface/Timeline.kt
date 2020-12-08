@@ -8,15 +8,11 @@ import android.content.res.Resources
 import android.database.Cursor
 import android.net.Uri
 import android.provider.CalendarContract
+import android.support.wearable.provider.WearableCalendarContract
 import android.widget.Toast
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalUnit
-import java.util.*
-import kotlin.time.TimeMark
 
 
 /**
@@ -25,16 +21,18 @@ import kotlin.time.TimeMark
 // Projection array. Creating indices for this array instead of doing
 // dynamic lookups improves performance.
 private val EVENT_PROJECTION: Array<String> = arrayOf(
-        CalendarContract.Calendars._ID,                     // 0
-        CalendarContract.Calendars.ACCOUNT_NAME,            // 1
-        CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,   // 2
-        CalendarContract.Calendars.OWNER_ACCOUNT,            // 3
+        CalendarContract.Events._ID,                            // 0
+        CalendarContract.Events.TITLE,                          // 1
+        CalendarContract.Events.CALENDAR_COLOR,          // 2
+        CalendarContract.Instances.BEGIN,                       // 3
+        CalendarContract.Instances.END,                         // 4
 )
 // The indices for the projection array above.
 private const val PROJECTION_ID_INDEX: Int = 0
-private const val PROJECTION_ACCOUNT_NAME_INDEX: Int = 1
-private const val PROJECTION_DISPLAY_NAME_INDEX: Int = 2
-private const val PROJECTION_OWNER_ACCOUNT_INDEX: Int = 3
+private const val PROJECTION_TITLE_INDEX: Int = 1
+private const val PROJECTION_CALENDAR_COLOR_INDEX: Int = 2
+private const val PROJECTION_BEGIN_INDEX: Int = 3
+private const val PROJECTION_END_INDEX: Int = 4
 
 
 /**
@@ -76,20 +74,24 @@ class Timeline (
         println("Timeline updating calendar data")
 
         // Construct Query
-        val uri: Uri = CalendarContract.Calendars.CONTENT_URI
-        val selection = "()"
+        val uriBuilder = WearableCalendarContract.Instances.CONTENT_URI.buildUpon()
+        val uri: Uri = uriBuilder.build() // CalendarContract.Events.CONTENT_URI
+        val selection = ""
         val selectionArgs: Array<String> = arrayOf()
 
-        val cur: Cursor? = contentResolver.query(uri, EVENT_PROJECTION, selection, selectionArgs, null)
+        println("Debug: $uri")
+        val cur: Cursor? = contentResolver.query(uri, EVENT_PROJECTION, null, null, null)
 
         if(cur != null){
+            println("Cursor count: ${cur.count}")
             while(cur.moveToNext()){
                 // Get the field values
-                val calID: Long = cur.getLong(PROJECTION_ID_INDEX)
-                val displayName: String = cur.getString(PROJECTION_DISPLAY_NAME_INDEX)
-                val accountName: String = cur.getString(PROJECTION_ACCOUNT_NAME_INDEX)
-                val ownerName: String = cur.getString(PROJECTION_OWNER_ACCOUNT_INDEX)
-                println("found $calID $displayName ($accountName)")
+                val eventID: Long = cur.getLong(PROJECTION_ID_INDEX)
+                val title: String = cur.getString(PROJECTION_TITLE_INDEX)
+                val calendarColor: String = cur.getString(PROJECTION_CALENDAR_COLOR_INDEX)
+                val begin: Long = cur.getLong(PROJECTION_BEGIN_INDEX)
+                val end: Long = cur.getLong(PROJECTION_END_INDEX)
+                println("found $eventID: $title in $calendarColor from $begin to $end)")
             }
             cur.close()
         }
