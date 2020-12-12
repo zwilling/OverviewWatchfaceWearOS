@@ -11,6 +11,7 @@ import android.provider.CalendarContract
 import android.support.wearable.provider.WearableCalendarContract
 import android.widget.Toast
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
@@ -46,6 +47,7 @@ class Timeline (
 ) {
     private val mTimeScope: Duration = Duration.ofHours(
             resources.getInteger(R.integer.timeline_scope).toLong())
+    var mCalendarEvents: MutableList<Event> = mutableListOf()
 
     /**
      * Hour marks to be shown on the timeline to show the scale
@@ -95,17 +97,25 @@ class Timeline (
         val cur: Cursor? = contentResolver.query(uri, EVENT_PROJECTION, selection, selectionArgs, null)
 
         if(cur != null){
+            val newCalendarEvents: MutableList<Event> = mutableListOf()
+
             println("Found calendar events: ${cur.count}")
             while(cur.moveToNext()){
                 // Get the field values
-                val eventID: Long = cur.getLong(PROJECTION_ID_INDEX)
-                val title: String = cur.getString(PROJECTION_TITLE_INDEX)
-                val calendarColor: String = cur.getString(PROJECTION_CALENDAR_COLOR_INDEX)
                 val begin: Long = cur.getLong(PROJECTION_BEGIN_INDEX)
                 val end: Long = cur.getLong(PROJECTION_END_INDEX)
-                println("found $eventID: $title in $calendarColor from $begin to $end)")
+                val event = Event(
+                        cur.getLong(PROJECTION_ID_INDEX),
+                        cur.getString(PROJECTION_TITLE_INDEX),
+                        LocalDateTime.ofEpochSecond(begin/1000, 0, ZoneOffset.UTC),
+                        LocalDateTime.ofEpochSecond(end/1000, 0, ZoneOffset.UTC),
+                        cur.getString(PROJECTION_CALENDAR_COLOR_INDEX)
+                )
+                println("found ${event.title}  ($event)")
+                newCalendarEvents.add(event)
             }
             cur.close()
+            mCalendarEvents = newCalendarEvents
         }
         else
             println("Calendar query returned no cursor")
@@ -130,3 +140,14 @@ class Timeline (
         return true
     }
 }
+
+/**
+ * Representation of Events to be shown
+ */
+data class Event(
+        val id: Long,
+        val title: String,
+        val begin: LocalDateTime,
+        val end: LocalDateTime,
+        val color: String,
+)
