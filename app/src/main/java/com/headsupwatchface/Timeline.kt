@@ -12,6 +12,7 @@ import android.support.wearable.provider.WearableCalendarContract
 import android.widget.Toast
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
 
@@ -75,15 +76,26 @@ class Timeline (
 
         // Construct Query
         val uriBuilder = WearableCalendarContract.Instances.CONTENT_URI.buildUpon()
-        val uri: Uri = uriBuilder.build() // CalendarContract.Events.CONTENT_URI
-        val selection = ""
-        val selectionArgs: Array<String> = arrayOf()
-
-        println("Debug: $uri")
-        val cur: Cursor? = contentResolver.query(uri, EVENT_PROJECTION, null, null, null)
+        val uri: Uri = uriBuilder.build()
+        // ToDo: Handle all day events somehow
+        val selection = "(" +
+                // Only show events that have not ended yet
+                "(${EVENT_PROJECTION[PROJECTION_END_INDEX]} > ?)" +
+                " AND " +
+                // Only show events that begin before the end of the time scope
+                "(${EVENT_PROJECTION[PROJECTION_BEGIN_INDEX]} < ?)" +
+                ")"
+        // time for query is needed in ms epoch UTC
+        val currentTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000
+        val timeScopeEnd = currentTime + mTimeScope.toMillis()
+        // Argument array needed according to docs for caching
+        val selectionArgs: Array<String> = arrayOf(currentTime.toString(), timeScopeEnd.toString())
+        println("selection query: $selection")
+        println("selection args: ${selectionArgs[0]} ${selectionArgs[1]}")
+        val cur: Cursor? = contentResolver.query(uri, EVENT_PROJECTION, selection, selectionArgs, null)
 
         if(cur != null){
-            println("Cursor count: ${cur.count}")
+            println("Found calendar events: ${cur.count}")
             while(cur.moveToNext()){
                 // Get the field values
                 val eventID: Long = cur.getLong(PROJECTION_ID_INDEX)
