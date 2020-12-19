@@ -7,6 +7,8 @@
     <uses-permission android:name="com.google.android.wearable.permission.RECEIVE_COMPLICATION_DATA" />
     <!-- Required to display calendar events -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <!-- Required to use REST API to get weather data -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature android:name="android.hardware.type.watch" />
 
