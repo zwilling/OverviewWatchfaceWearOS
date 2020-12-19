@@ -82,8 +82,6 @@ class Timeline(
         if (!checkPermissions(false))
             println("Can not update calendar data without permission")
 
-        println("Timeline updating calendar data")
-
         // Construct Query
         val uriBuilder = WearableCalendarContract.Instances.CONTENT_URI.buildUpon()
         val now: Long = Date().time
@@ -112,7 +110,6 @@ class Timeline(
             val newCalendarEvents: MutableList<Event> = mutableListOf()
             val timeZoneOffset = ZoneOffset.ofTotalSeconds(TimeZone.getDefault().getOffset(currentTime) / 1000)
 
-            println("Found calendar events: ${cur.count}")
             while(cur.moveToNext()){
                 // Get the field values
                 val begin: Long = cur.getLong(PROJECTION_BEGIN_INDEX)
@@ -133,7 +130,6 @@ class Timeline(
                             allDay,
                     )
                     // ToDo: handle how to display all day events
-                    println("found ${event.title} from $begin to $end ($event)")
                     newCalendarEvents.add(event)
                 }
             }
