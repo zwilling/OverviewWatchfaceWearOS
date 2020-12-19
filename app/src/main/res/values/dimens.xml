@@ -25,4 +25,8 @@
     <dimen name="hour_mark_thickness">1dp</dimen>
     <dimen name="hour_mark_font_size">6dp</dimen>
     <dimen name="hour_mark_text_offset">12dp</dimen>
+
+    <dimen name="event_bar_height">5dp</dimen>
+    <dimen name="event_bar_offset">-5dp</dimen>
+    <dimen name="event_title_offset">-10dp</dimen>
 </resources>
