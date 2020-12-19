@@ -2,7 +2,6 @@ package com.headsupwatchface
 
 import android.content.res.Resources
 import android.graphics.*
-import androidx.core.content.ContextCompat
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -15,8 +14,6 @@ class TimelineDrawer (
         var paintDefault: Paint,
         var paintTimelineText: Paint,
 ){
-    private var mAmbient: Boolean = false
-
     private val mTimeScope = Duration.ofHours(resources.getInteger(R.integer.timeline_scope).toLong())
 
     private val mLength: Float = resources.getDimension(R.dimen.timeline_length)
@@ -59,6 +56,20 @@ class TimelineDrawer (
             drawBarOnTimeline(canvas, hourIndicatorBar)
             drawTimeOnMark(canvas, hourMark, resources.getDimension(R.dimen.hour_mark_text_offset))
         }
+
+        // Calendar Events
+        for (event in timeline.calendarEvents){
+            val coordinateBegin = calculateCoordinateOfTime(event.begin)
+            val coordinateEnd = calculateCoordinateOfTime(event.end)
+            val eventBar = TimelineBar(
+                    x = coordinateBegin,
+                    size = resources.getDimension(R.dimen.event_bar_height),
+                    thickness = coordinateEnd - coordinateBegin
+            )
+            drawEventBarOnTimeline(canvas, eventBar)
+            drawTextOnMark(canvas, event.title, event.begin,
+                    resources.getDimension(R.dimen.event_title_offset), centered = false)
+        }
     }
 
     fun updateScreenDimensions(screenDimensions: ScreenDimensions){
@@ -89,12 +100,36 @@ class TimelineDrawer (
     }
 
     /**
+     * Draws an event-box on the timeline
+     */
+    private fun drawEventBarOnTimeline(canvas: Canvas, timelineBar: TimelineBar){
+        val barRect = RectF(timelineBar.x,
+                mCenterY - timelineBar.size,
+                timelineBar.x + timelineBar.thickness,
+                mCenterY)
+        canvas.drawRect(barRect, paintDefault)
+    }
+
+    /**
      * Draws a tiny time as number hint on the timeline
      * @param offset Offset above or below the timeline
      */
     private fun drawTimeOnMark(canvas: Canvas, time: LocalDateTime, offset: Float){
         val text = time.hour.toString()
-        val xPos = calculateCoordinateOfTime(time) - text.length / 4F * paintTimelineText.textSize
+        drawTextOnMark(canvas, text, time, offset)
+    }
+
+    /**
+     * Draws a tiny time as number hint on the timeline
+     * @param text Text to be written
+     * @param time Where it should be written on the timeline
+     * @param offset Offset above or below the timeline
+     * @param centered If the text should be centered above the time
+     */
+    private fun drawTextOnMark(canvas: Canvas, text: String, time: LocalDateTime, offset: Float, centered: Boolean = true){
+        var xPos = calculateCoordinateOfTime(time)
+        if (centered)
+            xPos -= text.length / 4F * paintTimelineText.textSize
         val yPos = mCenterY + offset
         canvas.drawText(text, xPos, yPos, paintTimelineText)
     }

@@ -34,6 +34,13 @@
         android:textAlignment="center" />
 
     <Switch
+        android:id="@+id/calendar_permission"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/settings_calendar_permission" />
+
+    <Switch
         android:id="@+id/hour_format_12"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

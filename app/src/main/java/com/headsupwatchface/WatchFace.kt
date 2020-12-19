@@ -1,6 +1,8 @@
 package com.headsupwatchface
 
+import android.Manifest
 import android.content.*
+import android.content.pm.PackageManager
 import android.graphics.*
 import android.os.Bundle
 import android.os.Handler
@@ -13,10 +15,11 @@ import android.support.wearable.watchface.CanvasWatchFaceService
 import android.support.wearable.watchface.WatchFaceService
 import android.support.wearable.watchface.WatchFaceStyle
 import android.view.SurfaceHolder
+import android.widget.Toast
 
 import java.lang.ref.WeakReference
-import java.util.Calendar
-import java.util.TimeZone
+import java.util.*
+import kotlin.concurrent.timerTask
 
 /**
  * Heads Up watch face showing the time in digital and a heads up of what is going to happen soon
@@ -99,6 +102,8 @@ class WatchFace : CanvasWatchFaceService() {
 
         private lateinit var mTimelineDrawer: TimelineDrawer
 
+        private lateinit var mTimerCalendarUpdate: Timer
+
         /**
          * Complication setup
          */
@@ -125,7 +130,7 @@ class WatchFace : CanvasWatchFaceService() {
             ),
         )
 
-        private val mTimeline = Timeline(resources)
+        private val mTimeline = Timeline(resources, contentResolver, this@WatchFace)
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -197,8 +202,19 @@ class WatchFace : CanvasWatchFaceService() {
             }
             setActiveComplications(*mComplications.keys.toIntArray())
 
+            mTimeline.checkPermissions(true)
             mTimelineDrawer = TimelineDrawer(resources, paintDefault = mMinutePaint,
                     paintTimelineText = mTimeLineTextPaint)
+
+            // create timer to periodically update the calendar events for the timeline
+            mTimerCalendarUpdate = Timer()
+            mTimerCalendarUpdate.schedule(timerTask{
+                if (mTimeline.checkPermissions(false))
+                    mTimeline.updateCalendar()
+            },
+                    resources.getInteger(R.integer.calendar_update_delay).toLong(),
+                    resources.getInteger(R.integer.calendar_update_interval).toLong()
+            )
         }
 
         override fun onDestroy() {
@@ -268,6 +284,7 @@ class WatchFace : CanvasWatchFaceService() {
 //                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
 //                        .show()
                     // TODO: handle tap on complication
+                    // TODO: check permissions and request if necessary
                 }
             }
             invalidate()
