@@ -6,6 +6,7 @@
 
     <!-- Permissions -->
     <string name="permission_calendar_missing">To allow calendar on timeline enter settings</string>
+    <string name="permission_internet_missing">Internet permission missing to download weather data</string>
 
     <!-- Preference Titles -->
     <string name="title_activity_settings">SettingsActivity</string>

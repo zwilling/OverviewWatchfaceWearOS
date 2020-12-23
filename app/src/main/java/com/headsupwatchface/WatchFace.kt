@@ -202,14 +202,17 @@ class WatchFace : CanvasWatchFaceService() {
             }
             setActiveComplications(*mComplications.keys.toIntArray())
 
-            mTimeline.checkPermissions(true)
+            mTimeline.checkPermissions(true, mapOf(
+                    Manifest.permission.INTERNET to R.string.permission_internet_missing,
+                    Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing,
+            ))
             mTimelineDrawer = TimelineDrawer(resources, paintDefault = mMinutePaint,
                     paintTimelineText = mTimeLineTextPaint)
 
             // create timer to periodically update the calendar events for the timeline
             mTimerCalendarUpdate = Timer()
             mTimerCalendarUpdate.schedule(timerTask{
-                if (mTimeline.checkPermissions(false))
+                if (mTimeline.checkPermissions(false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
                     mTimeline.updateCalendar()
             },
                     resources.getInteger(R.integer.calendar_update_delay).toLong(),
@@ -285,6 +288,9 @@ class WatchFace : CanvasWatchFaceService() {
 //                        .show()
                     // TODO: handle tap on complication
                     // TODO: check permissions and request if necessary
+
+                    // TODO: put weather update into timer
+                    mTimeline.updateWeather()
                 }
             }
             invalidate()
