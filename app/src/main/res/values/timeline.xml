@@ -4,4 +4,6 @@
 
     <integer name="calendar_update_delay">2000</integer>
     <integer name="calendar_update_interval">60000</integer>
+    <integer name="weather_update_delay">2000</integer>
+    <integer name="weather_update_interval">600000</integer>
 </resources>

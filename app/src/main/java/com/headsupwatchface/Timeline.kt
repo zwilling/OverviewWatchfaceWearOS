@@ -83,8 +83,10 @@ class Timeline(
      * Querying the calendars from the device to update what is represented in the timeline
      */
     fun updateCalendar (){
-        if (!checkPermissions(false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
+        if (!checkPermissions(false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing))){
             println("Can not update calendar data without permission")
+            return
+        }
 
         // Construct Query
         val uriBuilder = WearableCalendarContract.Instances.CONTENT_URI.buildUpon()
@@ -148,8 +150,11 @@ class Timeline(
      * Lookup weather data and prepare it for the timeline
      */
     fun updateWeather() {
-        if (!checkPermissions(true, mapOf(Manifest.permission.INTERNET to R.string.permission_internet_missing)))
+        if (!checkPermissions(false, mapOf(Manifest.permission.INTERNET to R.string.permission_internet_missing))){
             println("Can not update weather data without permissions")
+            return
+        }
+
         mWeather.updateWeather()
     }
 

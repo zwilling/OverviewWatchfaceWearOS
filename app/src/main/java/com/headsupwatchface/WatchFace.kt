@@ -103,6 +103,8 @@ class WatchFace : CanvasWatchFaceService() {
         private lateinit var mTimelineDrawer: TimelineDrawer
 
         private lateinit var mTimerCalendarUpdate: Timer
+        private lateinit var mTimerWeatherUpdate: Timer
+//        private lateinit var mTimerLocationUpdate: Timer
 
         /**
          * Complication setup
@@ -210,14 +212,21 @@ class WatchFace : CanvasWatchFaceService() {
             mTimelineDrawer = TimelineDrawer(resources, paintDefault = mMinutePaint,
                     paintTimelineText = mTimeLineTextPaint)
 
-            // create timer to periodically update the calendar events for the timeline
+            // create timer to periodically update background stuff (calendar, weather, location)
             mTimerCalendarUpdate = Timer()
             mTimerCalendarUpdate.schedule(timerTask{
                 if (mTimeline.checkPermissions(false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
                     mTimeline.updateCalendar()
             },
-                    resources.getInteger(R.integer.calendar_update_delay).toLong(),
-                    resources.getInteger(R.integer.calendar_update_interval).toLong()
+                resources.getInteger(R.integer.calendar_update_delay).toLong(),
+                resources.getInteger(R.integer.calendar_update_interval).toLong()
+            )
+            mTimerWeatherUpdate = Timer()
+            mTimerWeatherUpdate.schedule(timerTask{
+                mTimeline.updateWeather()
+            },
+                resources.getInteger(R.integer.weather_update_delay).toLong(),
+                resources.getInteger(R.integer.weather_update_interval).toLong()
             )
         }
 
@@ -288,10 +297,7 @@ class WatchFace : CanvasWatchFaceService() {
 //                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
 //                        .show()
                     // TODO: handle tap on complication
-                    // TODO: check permissions and request if necessary
 
-                    // TODO: put weather update into timer
-                    mTimeline.updateWeather()
                 }
             }
             invalidate()
