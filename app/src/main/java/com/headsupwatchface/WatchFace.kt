@@ -130,7 +130,8 @@ class WatchFace : CanvasWatchFaceService() {
             ),
         )
 
-        private val mTimeline = Timeline(resources, contentResolver, this@WatchFace)
+        private val mTimeline = Timeline(resources, contentResolver, this@WatchFace,
+            mSharedPreferences)
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we

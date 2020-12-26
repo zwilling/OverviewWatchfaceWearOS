@@ -25,9 +25,16 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
     <!-- Settings Layout -->
-    <string name="settings_title">Watch face settings</string>
+    <string name="settings_title">Watch face settings:</string>
     <string name="settings_button_complication_left">Left complication</string>
     <string name="settings_button_complication_right">Right complication</string>
     <string name="settings_12_hour_format_switch">12 Hour Format</string>
     <string name="settings_calendar_permission">Calendar permission</string>
+    <string name="settings_weather_title">Weather settings:</string>
+    <string name="settings_weather_input_api_key_hint">OpenWeatherMap API key</string>
+
+
+    <!-- Weather API call handling -->
+    <string name="weather_invalid_api_key">Invalid weather API key</string>
+    <string name="weather_status_">Invalid weather API key</string>
 </resources>

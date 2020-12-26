@@ -2,4 +2,5 @@
 <resources>
     <string name="preference_hour_format_12_key">preference_12_hour_format_key</string>
     <bool name="hour_format_12_default">false</bool>
+    <string name="preference_weather_api_key">OpenWeatherMap API key</string>
 </resources>

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.database.Cursor
@@ -45,14 +46,15 @@ private const val PROJECTION_ALL_DAY: Int = 5
  * Model class for a timeline and its content
  */
 class Timeline(
-        val resources: Resources,
-        val contentResolver: ContentResolver, // for querying the calendar
-        val context: Context,  // to check handle permissions
+    val resources: Resources,
+    private val contentResolver: ContentResolver, // for querying the calendar
+    private val context: Context,  // to check handle permissions
+    private val mSharedPreferences: SharedPreferences,
 ) {
     private val mTimeScope: Duration = Duration.ofHours(
             resources.getInteger(R.integer.timeline_scope).toLong())
 
-    private val mWeather: Weather = Weather()
+    private val mWeather: Weather = Weather(context, mSharedPreferences)
 
     /**
      * Calendar Events to be shown on the timeline

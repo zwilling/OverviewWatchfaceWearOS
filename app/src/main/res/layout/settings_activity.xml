@@ -4,9 +4,13 @@
     android:layout_height="match_parent"
     android:background="#000000"
     android:gravity="center_horizontal|center_vertical"
+    android:isScrollContainer="true"
+    android:keepScreenOn="true"
     android:orientation="vertical"
     android:scrollIndicators="right"
     android:scrollbarAlwaysDrawVerticalTrack="true"
+    android:scrollbarStyle="outsideInset"
+    android:scrollbars="vertical"
     android:textAlignment="center">
 
     <TextView
@@ -46,5 +50,21 @@
         android:layout_height="wrap_content"
         android:checked="false"
         android:text="@string/settings_12_hour_format_switch" />
+
+    <TextView
+        android:id="@+id/text_weather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="clip_horizontal"
+        android:text="@string/settings_weather_title"
+        android:textAlignment="center" />
+
+    <EditText
+        android:id="@+id/weather_api_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="@string/settings_weather_input_api_key_hint"
+        android:hint="@string/settings_weather_input_api_key_hint"
+        android:inputType="text" />
 
 </LinearLayout>

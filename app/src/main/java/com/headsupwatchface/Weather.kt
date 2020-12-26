@@ -1,6 +1,9 @@
 package com.headsupwatchface
 
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.Resources
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -25,6 +28,14 @@ object WeatherModel {
             val dt: Long, val temp: Float)
 }
 
+enum class WeatherQueryStatus{
+    UNINITIALIZED,
+    OK,
+    INVALID_API_KEY,
+    TIMEOUT_ERROR,
+    OTHER_ERROR,
+}
+
 /**
  * Interface for Retrofit defining how to query weather data using the REST interface
  */
@@ -34,7 +45,8 @@ interface WeatherApiService {
         @Query("lat") lat: String,
         @Query("lon") lon: String,
         @Query("exclude") exclude: String,
-        @Query("appid") appid: String
+        @Query("units") units: String,
+        @Query("appid") appid: String,
     ):
             Observable<WeatherModel.Result>
 
@@ -55,7 +67,10 @@ interface WeatherApiService {
  * Using the OpenWeatherMap API and Retrofit to convert the JSON response into a nice Kotlin object
  * Inspired by https://github.com/elye/demo_wiki_search_count
  */
-class Weather(){
+class Weather(
+    private val context: Context,
+    private val mSharedPreferences: SharedPreferences,
+){
     // create retrofit service when it is used for the first time
     private val weatherApiServe by lazy {
         WeatherApiService.create()
@@ -63,18 +78,40 @@ class Weather(){
     // RXJava2.0 object tracking fetching activity
     private var disposableObserver: Disposable? = null
 
+    var weather : WeatherModel.Result? = null
+    var status = WeatherQueryStatus.UNINITIALIZED
+    var errorMessage = ""
+
     fun updateWeather(){
         println("Updating weather data")
 
         // Todo: get coordinated from device and api key from settings
-        disposableObserver = weatherApiServe.getData("", "", "", "")
+        // ToDo: settings for units
+        val apiKey:String = mSharedPreferences.getString(context.getString(R.string.preference_weather_api_key), "").toString()
+        println("using api key $apiKey")
+        disposableObserver = weatherApiServe.getData("0.0", "0.0",
+                "", "metric", apiKey)
                 .subscribeOn(Schedulers.io())
                 //.observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        {result -> println("Got weather result temp: ${result.current.temp}")},
-                        {error -> println("Weather query error: ${error.message}")}
+                        {result ->
+                            println("Got weather result temp: ${result.current.temp}")
+                            weather = result
+                            status = WeatherQueryStatus.OK
+                            errorMessage = ""
+                        },
+                        {error ->
+                            errorMessage = error.message.toString()
+                            println("Weather query error: $errorMessage")
+                            status = when{
+                                errorMessage.contains("401") -> WeatherQueryStatus.INVALID_API_KEY
+                                errorMessage.contains("timeout") -> WeatherQueryStatus.TIMEOUT_ERROR
+                                else -> WeatherQueryStatus.OTHER_ERROR
+                            }
+                            // ToDo: show error in toast somehow (needs to be done in other Thread)
+                        }
                 )
-        // ToDo: Handle abnormal result (invalid api key, too many calls, no internet, ...)
+        // ToDo: Handle abnormal result (too many calls, no internet, ...)
     }
 }
 
