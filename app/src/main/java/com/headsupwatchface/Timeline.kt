@@ -83,7 +83,7 @@ class Timeline(
      * Querying the calendars from the device to update what is represented in the timeline
      */
     fun updateCalendar (){
-        if (!checkPermissions(false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing))){
+        if (!PermissionChecker.checkPermissions(context, false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing))){
             println("Can not update calendar data without permission")
             return
         }
@@ -150,34 +150,12 @@ class Timeline(
      * Lookup weather data and prepare it for the timeline
      */
     fun updateWeather() {
-        if (!checkPermissions(false, mapOf(Manifest.permission.INTERNET to R.string.permission_internet_missing))){
+        if (!PermissionChecker.checkPermissions(context, false, mapOf(Manifest.permission.INTERNET to R.string.permission_internet_missing))){
             println("Can not update weather data without permissions")
             return
         }
 
         mWeather.updateWeather()
-    }
-
-    /**
-     * Check if the watch face has all permissions it needs for the timeline
-     * To grant the permission, the user has to go to the settings because this has to be done
-     * from and activity, and a watch face is only a service
-     *
-     * @param notify: Whether the user should be notified about missing permissions
-     * @param permissionMessageMap: Map of required permissions to the message to be shown
-     * @return: If all permissions were granted
-     */
-    fun checkPermissions(notify: Boolean, permissionMessageMap: Map<String, Int>): Boolean{
-        for((permission, message) in permissionMessageMap){
-            if (context.checkSelfPermission(permission) ==
-                    PackageManager.PERMISSION_DENIED){
-                if(notify)
-                    Toast.makeText(context.applicationContext, message,
-                            Toast.LENGTH_LONG).show()
-                return false
-            }
-        }
-        return true
     }
 }
 

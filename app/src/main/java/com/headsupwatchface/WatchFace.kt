@@ -16,6 +16,8 @@ import android.support.wearable.watchface.WatchFaceService
 import android.support.wearable.watchface.WatchFaceStyle
 import android.view.SurfaceHolder
 import android.widget.Toast
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 
 import java.lang.ref.WeakReference
 import java.util.*
@@ -205,7 +207,7 @@ class WatchFace : CanvasWatchFaceService() {
             }
             setActiveComplications(*mComplications.keys.toIntArray())
 
-            mTimeline.checkPermissions(true, mapOf(
+            PermissionChecker.checkPermissions(this@WatchFace, true, mapOf(
                     Manifest.permission.INTERNET to R.string.permission_internet_missing,
                     Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing,
             ))
@@ -215,7 +217,7 @@ class WatchFace : CanvasWatchFaceService() {
             // create timer to periodically update background stuff (calendar, weather, location)
             mTimerCalendarUpdate = Timer()
             mTimerCalendarUpdate.schedule(timerTask{
-                if (mTimeline.checkPermissions(false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
+                if (PermissionChecker.checkPermissions(this@WatchFace, false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
                     mTimeline.updateCalendar()
             },
                 resources.getInteger(R.integer.calendar_update_delay).toLong(),
@@ -297,7 +299,13 @@ class WatchFace : CanvasWatchFaceService() {
 //                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
 //                        .show()
                     // TODO: handle tap on complication
-
+                    if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this@WatchFace)
+                        != ConnectionResult.SUCCESS){
+                        Toast.makeText(applicationContext, R.string.google_play_missing, Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    PermissionChecker.checkPermissions(this@WatchFace, true,
+                        mapOf(Manifest.permission.ACCESS_COARSE_LOCATION to R.string.permission_location_missing))
                 }
             }
             invalidate()

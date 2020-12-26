@@ -7,6 +7,8 @@
     <!-- Permissions -->
     <string name="permission_calendar_missing">To allow calendar on timeline enter settings</string>
     <string name="permission_internet_missing">Internet permission missing to download weather data</string>
+    <string name="permission_location_missing">Coarse location permission missing for getting weather data</string>
+    <string name="google_play_missing">GooglePlay serice not available to query last known location for weather</string>
 
     <!-- Preference Titles -->
     <string name="title_activity_settings">SettingsActivity</string>

@@ -9,6 +9,8 @@
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <!-- Required to use REST API to get weather data -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required to get location for weather service -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -23,6 +25,7 @@
         <service
             android:name=".WatchFace"
             android:label="@string/my_digital_name"
+            android:foregroundServiceType="location"
             android:permission="android.permission.BIND_WALLPAPER">
             <meta-data
                 android:name="android.service.wallpaper"
