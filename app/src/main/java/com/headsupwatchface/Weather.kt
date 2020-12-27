@@ -70,6 +70,7 @@ interface WeatherApiService {
 class Weather(
     private val context: Context,
     private val mSharedPreferences: SharedPreferences,
+    private val resources: Resources,
 ){
     // create retrofit service when it is used for the first time
     private val weatherApiServe by lazy {
@@ -82,6 +83,8 @@ class Weather(
     var status = WeatherQueryStatus.UNINITIALIZED
     var errorMessage = ""
 
+    private val mLocationService = LocationService(context, resources)
+
     fun updateWeather(){
         println("Updating weather data")
 
@@ -90,7 +93,7 @@ class Weather(
         val apiKey:String = mSharedPreferences.getString(context.getString(R.string.preference_weather_api_key), "").toString()
         println("using api key $apiKey")
         disposableObserver = weatherApiServe.getData("0.0", "0.0",
-                "", "metric", apiKey)
+                "", context.getString(R.string.weather_units), apiKey)
                 .subscribeOn(Schedulers.io())
                 //.observeOn(AndroidSchedulers.mainThread())
                 .subscribe(

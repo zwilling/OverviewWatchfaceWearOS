@@ -54,7 +54,7 @@ class Timeline(
     private val mTimeScope: Duration = Duration.ofHours(
             resources.getInteger(R.integer.timeline_scope).toLong())
 
-    private val mWeather: Weather = Weather(context, mSharedPreferences)
+    private val mWeather: Weather = Weather(context, mSharedPreferences, resources)
 
     /**
      * Calendar Events to be shown on the timeline

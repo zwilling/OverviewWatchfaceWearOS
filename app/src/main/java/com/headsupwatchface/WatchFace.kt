@@ -106,7 +106,6 @@ class WatchFace : CanvasWatchFaceService() {
 
         private lateinit var mTimerCalendarUpdate: Timer
         private lateinit var mTimerWeatherUpdate: Timer
-//        private lateinit var mTimerLocationUpdate: Timer
 
         /**
          * Complication setup
