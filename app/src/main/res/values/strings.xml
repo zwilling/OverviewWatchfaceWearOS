@@ -28,9 +28,11 @@
 
     <!-- Settings Layout -->
     <string name="settings_title">Watch face settings:</string>
-    <string name="settings_button_complication_left">Left complication</string>
-    <string name="settings_button_complication_right">Right complication</string>
+    <string name="settings_complication_title">Complications</string>
+    <string name="settings_button_complication_left">Left</string>
+    <string name="settings_button_complication_right">Right</string>
     <string name="settings_12_hour_format_switch">12 Hour Format</string>
+    <string name="settings_location_permission">Location permission</string> <!-- Coarse-->
     <string name="settings_calendar_permission">Calendar permission</string>
     <string name="settings_weather_title">Weather settings:</string>
     <string name="settings_weather_input_api_key_hint">OpenWeatherMap API key</string>
