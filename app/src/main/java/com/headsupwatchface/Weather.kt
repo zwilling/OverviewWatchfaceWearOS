@@ -92,7 +92,15 @@ class Weather(
         // ToDo: settings for units
         val apiKey:String = mSharedPreferences.getString(context.getString(R.string.preference_weather_api_key), "").toString()
         println("using api key $apiKey")
-        disposableObserver = weatherApiServe.getData("0.0", "0.0",
+
+        val latitude = if (mLocationService.lastKnownLocation != null)
+            mLocationService.lastKnownLocation!!.latitude
+        else 0.0 // test location for emulated devices
+        val longitude = if (mLocationService.lastKnownLocation != null)
+            mLocationService.lastKnownLocation!!.longitude
+        else 28.0 // test location for emulated devices
+
+        disposableObserver = weatherApiServe.getData(latitude.toString(), longitude.toString(),
                 "", context.getString(R.string.weather_units), apiKey)
                 .subscribeOn(Schedulers.io())
                 //.observeOn(AndroidSchedulers.mainThread())
