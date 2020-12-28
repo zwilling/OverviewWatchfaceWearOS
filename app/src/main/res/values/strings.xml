@@ -42,4 +42,5 @@
     <string name="weather_invalid_api_key">Invalid weather API key</string>
     <string name="weather_status">Invalid weather API key</string>
     <string name="weather_units">metric</string>
+    <string name="weather_units_display">°C</string>
 </resources>

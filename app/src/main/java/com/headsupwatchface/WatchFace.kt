@@ -210,8 +210,8 @@ class WatchFace : CanvasWatchFaceService() {
                     Manifest.permission.INTERNET to R.string.permission_internet_missing,
                     Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing,
             ))
-            mTimelineDrawer = TimelineDrawer(resources, paintDefault = mMinutePaint,
-                    paintTimelineText = mTimeLineTextPaint)
+            mTimelineDrawer = TimelineDrawer(resources, this@WatchFace,
+                paintDefault = mMinutePaint, paintTimelineText = mTimeLineTextPaint)
 
             // create timer to periodically update background stuff (calendar, weather, location)
             mTimerCalendarUpdate = Timer()

@@ -3,6 +3,9 @@ package com.headsupwatchface
 import android.content.Context
 import android.content.pm.PackageManager
 import android.widget.Toast
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.*
 
 /**
  * Small class for capturing screen dimensions
@@ -37,4 +40,25 @@ class PermissionChecker(){
                         return true
                 }
         }
+}
+
+/**
+ * Small conversion function between epoch time and localdatetime using local timezone
+ *
+ * @param epoch: Epoch of the time to convert
+ * @return: Time as LocalDateTime
+ */
+fun timeOfEpoch(epoch: Long) : LocalDateTime{
+        return LocalDateTime.ofEpochSecond(epoch, 0, getTimeZoneOffset())
+}
+
+/**
+ * Small helper function to get the current timezone (needed to convert epoch to LocalDateTime)
+ *
+ * @return: ZoneOffset of local timezone
+ */
+fun getTimeZoneOffset(): ZoneOffset {
+        return ZoneOffset.ofTotalSeconds(
+                TimeZone.getDefault().getOffset(LocalDateTime.now().toEpochSecond(
+                                ZoneOffset.UTC) * 1000) / 1000)
 }

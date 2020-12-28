@@ -1,15 +1,21 @@
 package com.headsupwatchface
 
+import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
+import androidx.core.content.ContextCompat
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.util.*
+import kotlin.math.roundToInt
 
 /**
  * Logic how to draw a timeline onto the canvas of the watch face
  */
 class TimelineDrawer (
         val resources: Resources,
+        val context: Context,
         var screenDimensions: ScreenDimensions = ScreenDimensions(0,0),
         var paintDefault: Paint,
         var paintTimelineText: Paint,
@@ -26,8 +32,14 @@ class TimelineDrawer (
             thickness = resources.getDimension(R.dimen.timeline_now_bar_thickness)
     )
 
-    var mCenterX = screenDimensions.width / 2F
-    var mCenterY = screenDimensions.height / 2F
+    private var mCenterX = screenDimensions.width / 2F
+    private var mCenterY = screenDimensions.height / 2F
+
+    private var mTimeZoneOffset = TimeZone.getDefault()
+    private var mTemperaturePaint = Paint().apply {
+        color = ContextCompat.getColor(context, R.color.temperature)
+        textSize = resources.getDimension(R.dimen.hour_mark_font_size)
+    }
 
     /**
      * Main function to draw the timeline on the watch face canvas
@@ -69,6 +81,12 @@ class TimelineDrawer (
             drawEventBarOnTimeline(canvas, eventBar)
             drawTextOnMark(canvas, event.title, event.begin,
                     resources.getDimension(R.dimen.event_title_offset), centered = false)
+        }
+
+        // Weather data
+        val weatherData = timeline.weather.weather
+        if (weatherData != null){
+            drawTemperature(canvas, weatherData)
         }
     }
 
@@ -133,4 +151,41 @@ class TimelineDrawer (
         val yPos = mCenterY + offset
         canvas.drawText(text, xPos, yPos, paintTimelineText)
     }
+
+    /**
+     * Draws a temperature line indicating the weather from the current temp and the hourly forecast
+     */
+    private fun drawTemperature(canvas: Canvas, weather: WeatherModel.Result){
+        // get start point for current time
+        val nowX = mNowBar.x
+        val nowY = getTempYPos(weather.current.temp)
+        val nowText = weather.current.temp.roundToInt().toString() + context.getString(R.string.weather_units_display)
+
+        // text next to current temp for scale
+        val nowTextX = nowX - nowText.length / 4F * mTemperaturePaint.textSize
+        canvas.drawText(nowText, nowTextX, nowY, mTemperaturePaint)
+
+        // temp graph
+        var points = mutableListOf(PointF(nowX, nowY))
+        for (hourlyWeather in weather.hourly){
+            points.add(PointF(calculateCoordinateOfTime(timeOfEpoch(hourlyWeather.dt)), getTempYPos(hourlyWeather.temp)))
+            if (hourlyWeather.dt - weather.current.dt > resources.getInteger(R.integer.timeline_scope) * 3600L)
+                break  // we do not need to draw outside of timescope
+        }
+        for (i in 0 until points.size - 1){
+            canvas.drawLine(points[i].x, points[i].y, points[i+1].x, points[i+1].y, mTemperaturePaint)
+            // ToDo: A spline would look better
+        }
+    }
+
+    /**
+     * Getting the y coordinate corresponding to temperature values
+     * @param temp: Temperature to find the coordinate for
+     * @return: Y coordinate
+     */
+    private fun getTempYPos(temp: Float): Float{
+        // calculate y pos from scale using 40° as reference
+        return mCenterY - resources.getDimension(R.dimen.temp_scale_40_degrees) * temp / 40.0f
+    }
+
 }

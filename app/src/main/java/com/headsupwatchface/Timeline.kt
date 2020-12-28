@@ -5,14 +5,12 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.database.Cursor
 import android.net.Uri
 import android.provider.CalendarContract
 import android.support.wearable.provider.WearableCalendarContract
 import android.text.format.DateUtils
-import android.widget.Toast
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -54,7 +52,7 @@ class Timeline(
     private val mTimeScope: Duration = Duration.ofHours(
             resources.getInteger(R.integer.timeline_scope).toLong())
 
-    private val mWeather: Weather = Weather(context, mSharedPreferences, resources)
+    val weather: Weather = Weather(context, mSharedPreferences, resources)
 
     /**
      * Calendar Events to be shown on the timeline
@@ -114,7 +112,6 @@ class Timeline(
 
         if(cur != null){
             val newCalendarEvents: MutableList<Event> = mutableListOf()
-            val timeZoneOffset = ZoneOffset.ofTotalSeconds(TimeZone.getDefault().getOffset(currentTime) / 1000)
 
             while(cur.moveToNext()){
                 // Get the field values
@@ -130,8 +127,8 @@ class Timeline(
                     val event = Event(
                             cur.getLong(PROJECTION_ID_INDEX),
                             cur.getString(PROJECTION_TITLE_INDEX),
-                            LocalDateTime.ofEpochSecond(begin / 1000, 0, timeZoneOffset),
-                            LocalDateTime.ofEpochSecond(end / 1000, 0, timeZoneOffset),
+                            timeOfEpoch(begin / 1000),
+                            timeOfEpoch(end / 1000),
                             cur.getString(PROJECTION_CALENDAR_COLOR_INDEX),
                             allDay,
                     )
@@ -155,7 +152,7 @@ class Timeline(
             return
         }
 
-        mWeather.updateWeather()
+        weather.updateWeather()
     }
 }
 

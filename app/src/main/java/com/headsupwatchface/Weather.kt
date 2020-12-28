@@ -22,10 +22,12 @@ object WeatherModel {
             val lat: String, val lon: String,
             val current: CurrentWeather,
 //            val minutely: MinutelyWeather,
-//            val hourly: HourlyWeather,
+            val hourly: List<HourlyWeather>,
             )
     data class CurrentWeather(
-            val dt: Long, val temp: Float)
+        val dt: Long, val temp: Float)
+    data class HourlyWeather(
+        val dt: Long, val temp: Float)
 }
 
 enum class WeatherQueryStatus{
