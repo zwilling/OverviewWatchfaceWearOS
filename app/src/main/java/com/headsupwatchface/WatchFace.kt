@@ -275,6 +275,8 @@ class WatchFace : CanvasWatchFaceService() {
                 it.drawable.setInAmbientMode(inAmbientMode)
             }
 
+            mTimelineDrawer.onAmbientModeChanged(inAmbientMode)
+
             // Whether the timer should be running depends on whether we"re visible (as well as
             // whether we"re in ambient mode), so we may need to start or stop the timer.
             updateTimer()
@@ -298,13 +300,6 @@ class WatchFace : CanvasWatchFaceService() {
 //                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
 //                        .show()
                     // TODO: handle tap on complication
-                    if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this@WatchFace)
-                        != ConnectionResult.SUCCESS){
-                        Toast.makeText(applicationContext, R.string.google_play_missing, Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                    PermissionChecker.checkPermissions(this@WatchFace, true,
-                        mapOf(Manifest.permission.ACCESS_COARSE_LOCATION to R.string.permission_location_missing))
                 }
             }
             invalidate()

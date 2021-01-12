@@ -22,6 +22,8 @@ class TimelineDrawer (
 ){
     private val mTimeScope = Duration.ofHours(resources.getInteger(R.integer.timeline_scope).toLong())
 
+    private var mAmbient = false
+
     private val mLength: Float = resources.getDimension(R.dimen.timeline_length)
     private val mArrowLength: Float = resources.getDimension(R.dimen.timeline_arrow_length)
 
@@ -95,6 +97,22 @@ class TimelineDrawer (
 
         mCenterX = screenDimensions.width / 2F;
         mCenterY = screenDimensions.height / 2F
+    }
+
+    /**
+     * On ambient mode change of the watch face, we need to adjust color and antialiasing
+     */
+    fun onAmbientModeChanged(inAmbientMode: Boolean) {
+        mAmbient = inAmbientMode
+
+        // adjust paint antialiasing
+        for (paint in listOf(mTemperaturePaint)){
+            paint.isAntiAlias = !inAmbientMode
+        }
+
+        // change color to save battery in ambient mode
+        mTemperaturePaint.color = if (!mAmbient) ContextCompat.getColor(context, R.color.temperature)
+            else ContextCompat.getColor(context, R.color.temperature_ambient)
     }
 
     /**
