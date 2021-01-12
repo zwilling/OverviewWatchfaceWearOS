@@ -42,6 +42,10 @@ class TimelineDrawer (
         color = ContextCompat.getColor(context, R.color.temperature)
         textSize = resources.getDimension(R.dimen.hour_mark_font_size)
     }
+    private var mPrecipicationPaint = Paint().apply {
+        color = ContextCompat.getColor(context, R.color.precipitation)
+        textSize = resources.getDimension(R.dimen.hour_mark_font_size)
+    }
 
     /**
      * Main function to draw the timeline on the watch face canvas
@@ -89,6 +93,7 @@ class TimelineDrawer (
         val weatherData = timeline.weather.weather
         if (weatherData != null){
             drawTemperature(canvas, weatherData)
+            drawProbabliltyOfPrecipitation(canvas, weatherData)
         }
     }
 
@@ -106,13 +111,15 @@ class TimelineDrawer (
         mAmbient = inAmbientMode
 
         // adjust paint antialiasing
-        for (paint in listOf(mTemperaturePaint)){
+        for (paint in listOf(mTemperaturePaint, mPrecipicationPaint)){
             paint.isAntiAlias = !inAmbientMode
         }
 
         // change color to save battery in ambient mode
         mTemperaturePaint.color = if (!mAmbient) ContextCompat.getColor(context, R.color.temperature)
             else ContextCompat.getColor(context, R.color.temperature_ambient)
+        mPrecipicationPaint.color = if (!mAmbient) ContextCompat.getColor(context, R.color.precipitation)
+            else ContextCompat.getColor(context, R.color.precipitation_ambient)
     }
 
     /**
@@ -197,6 +204,34 @@ class TimelineDrawer (
     }
 
     /**
+     * Draws a precipitation graph based on hourly data
+     */
+    private fun drawProbabliltyOfPrecipitation(canvas: Canvas, weather: WeatherModel.Result){
+        // get start point for current time
+        val nowX = mNowBar.x
+        val nowY = getPopYPos(weather.current.temp)
+        val nowText = weather.current.temp.roundToInt().toString() + context.getString(R.string.weather_units_display)
+
+//        // text next to current temp for scale
+//        val nowTextX = nowX - nowText.length / 4F * mPrecipicationPaint.textSize
+//        canvas.drawText(nowText, nowTextX, nowY, mPrecipicationPaint)
+
+        // temp graph
+        var points = mutableListOf<PointF>()
+        for (hourlyWeather in weather.hourly){
+            points.add(PointF(calculateCoordinateOfTime(timeOfEpoch(hourlyWeather.dt)), getPopYPos(hourlyWeather.pop)))
+            println("time comp ${timeOfEpoch(hourlyWeather.dt)}")
+            if (hourlyWeather.dt - weather.current.dt > resources.getInteger(R.integer.timeline_scope) * 3600L)
+                break  // we do not need to draw outside of timescope
+        }
+        for (i in 0 until points.size - 1){
+            canvas.drawLine(points[i].x, points[i].y, points[i+1].x, points[i+1].y, mPrecipicationPaint)
+            // ToDo: A spline would look better
+        }
+        println("pre points $points")
+    }
+
+    /**
      * Getting the y coordinate corresponding to temperature values
      * @param temp: Temperature to find the coordinate for
      * @return: Y coordinate
@@ -204,6 +239,16 @@ class TimelineDrawer (
     private fun getTempYPos(temp: Float): Float{
         // calculate y pos from scale using 40° as reference
         return mCenterY - resources.getDimension(R.dimen.temp_scale_40_degrees) * temp / 40.0f
+    }
+
+    /**
+     * Getting the y coordinate corresponding to pop values
+     * @param pop: Probability of precipitation to find the coordinate for
+     * @return: Y coordinate
+     */
+    private fun getPopYPos(pop: Float): Float{
+        // calculate y pos from scale
+        return mCenterY - resources.getDimension(R.dimen.precipitation_scale_100_percent) * pop
     }
 
 }

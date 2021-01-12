@@ -25,9 +25,13 @@ object WeatherModel {
             val hourly: List<HourlyWeather>,
             )
     data class CurrentWeather(
-        val dt: Long, val temp: Float)
+        val dt: Long,
+        val temp: Float)
     data class HourlyWeather(
-        val dt: Long, val temp: Float)
+        val dt: Long,
+        val temp: Float,
+        val pop: Float,  // Probability of precipitation
+    )
 }
 
 enum class WeatherQueryStatus{
