@@ -33,4 +33,5 @@
     <dimen name="temp_scale_40_degrees">40dp</dimen>
     <dimen name="precipitation_scale_100_percent">-50dp</dimen>
     <dimen name="precipitation_level_width">5dp</dimen>
+    <dimen name="precipitation_minutely_scale_1mm">5dp</dimen>
 </resources>

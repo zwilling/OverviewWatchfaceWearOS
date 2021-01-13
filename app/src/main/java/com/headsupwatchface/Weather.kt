@@ -21,16 +21,20 @@ object WeatherModel {
     data class Result(
             val lat: String, val lon: String,
             val current: CurrentWeather,
-//            val minutely: MinutelyWeather,
+            val minutely: List<MinutelyWeather>,
             val hourly: List<HourlyWeather>,
             )
     data class CurrentWeather(
         val dt: Long,
         val temp: Float)
     data class HourlyWeather(
-        val dt: Long,
-        val temp: Float,
-        val pop: Float,  // Probability of precipitation
+            val dt: Long,
+            val temp: Float,
+            val pop: Float,  // Probability of precipitation
+    )
+    data class MinutelyWeather(
+            val dt: Long,
+            val precipitation: Float,  // precipitation in mm
     )
 }
 

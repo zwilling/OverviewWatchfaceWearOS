@@ -94,6 +94,8 @@ class TimelineDrawer (
         if (weatherData != null){
             drawTemperature(canvas, weatherData)
             drawProbabliltyOfPrecipitation(canvas, weatherData)
+            if(!mAmbient)
+                drawMinutelyPrecipitation(canvas, weatherData)
         }
     }
 
@@ -238,6 +240,35 @@ class TimelineDrawer (
 
         // write pop on highest value for reference
         canvas.drawText(popText, maxPopX, maxPopY, mPrecipicationPaint)
+    }
+
+    /**
+     * Draws a minutely precipitation chart
+     */
+    private fun drawMinutelyPrecipitation(canvas: Canvas, weather: WeatherModel.Result){
+        var maxPrecipitation = 0.0f
+        var maxX = 0.0f
+        var maxY = 0.0f
+        var maxText = ""
+
+        for (minutelyWeather in weather.minutely){
+            val barX = calculateCoordinateOfTime(timeOfEpoch(minutelyWeather.dt))
+            val barHeight = minutelyWeather.precipitation * resources.getDimension(R.dimen.precipitation_minutely_scale_1mm)
+
+            // draw as minutely lines like a detailed bar chart
+            canvas.drawLine(barX, mCenterY, barX, mCenterY + barHeight, mPrecipicationPaint)
+
+            // find place where to indicate max
+            if (minutelyWeather.precipitation > maxPrecipitation){
+                maxPrecipitation = minutelyWeather.precipitation
+                maxText = "${maxPrecipitation.toInt()}mm"
+                maxX = barX - maxText.length / 4F * mPrecipicationPaint.textSize
+                maxY = mCenterY + barHeight + mPrecipicationPaint.textSize
+            }
+        }
+
+        // write highest value for reference
+        canvas.drawText(maxText, maxX, maxY, mPrecipicationPaint)
     }
 
     /**
