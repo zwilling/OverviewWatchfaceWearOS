@@ -207,20 +207,25 @@ class TimelineDrawer (
      * Draws a precipitation graph based on hourly data
      */
     private fun drawProbabliltyOfPrecipitation(canvas: Canvas, weather: WeatherModel.Result){
-        // get start point for current time
-        val nowX = mNowBar.x
-        val nowY = getPopYPos(weather.current.temp)
-        val nowText = weather.current.temp.roundToInt().toString() + context.getString(R.string.weather_units_display)
-
-//        // text next to current temp for scale
-//        val nowTextX = nowX - nowText.length / 4F * mPrecipicationPaint.textSize
-//        canvas.drawText(nowText, nowTextX, nowY, mPrecipicationPaint)
-
-        // temp graph
+        // pop graph
         var points = mutableListOf<PointF>()
+        var maxPop = 0.0f
+        var maxPopX = 0.0f
+        var maxPopY = 0.0f
+        var popText = ""
+
         for (hourlyWeather in weather.hourly){
-            points.add(PointF(calculateCoordinateOfTime(timeOfEpoch(hourlyWeather.dt)), getPopYPos(hourlyWeather.pop)))
-            println("time comp ${timeOfEpoch(hourlyWeather.dt)}")
+            val point = PointF(calculateCoordinateOfTime(timeOfEpoch(hourlyWeather.dt)), getPopYPos(hourlyWeather.pop))
+            points.add(point)
+
+            // find place where to indicate max pop
+            if (hourlyWeather.pop > maxPop){
+                maxPop = hourlyWeather.pop
+                popText = "$maxPop%"
+                maxPopX = point.x - popText.length / 4F * mPrecipicationPaint.textSize
+                maxPopY = point.y + mPrecipicationPaint.textSize
+            }
+
             if (hourlyWeather.dt - weather.current.dt > resources.getInteger(R.integer.timeline_scope) * 3600L)
                 break  // we do not need to draw outside of timescope
         }
@@ -228,7 +233,9 @@ class TimelineDrawer (
             canvas.drawLine(points[i].x, points[i].y, points[i+1].x, points[i+1].y, mPrecipicationPaint)
             // ToDo: A spline would look better
         }
-        println("pre points $points")
+
+        // write pop on highest value for reference
+        canvas.drawText(popText, maxPopX, maxPopY, mPrecipicationPaint)
     }
 
     /**

@@ -7,7 +7,7 @@
 
     <color name="temperature">#FF5722</color>
     <color name="temperature_ambient">#bbbbbb</color>
-    <color name="precipitation">#1E1EB6</color>
+    <color name="precipitation">#5C5CFF</color>
     <color name="precipitation_ambient">#bbbbbb</color>
     <color name="snow">#E1DFDC</color>
 </resources>
