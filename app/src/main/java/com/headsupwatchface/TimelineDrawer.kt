@@ -195,7 +195,7 @@ class TimelineDrawer (
         for (hourlyWeather in weather.hourly){
             points.add(PointF(calculateCoordinateOfTime(timeOfEpoch(hourlyWeather.dt)), getTempYPos(hourlyWeather.temp)))
             if (hourlyWeather.dt - weather.current.dt > resources.getInteger(R.integer.timeline_scope) * 3600L)
-                break  // we do not need to draw outside of timescope
+                break  // we do not need to draw outside of time scope
         }
         for (i in 0 until points.size - 1){
             canvas.drawLine(points[i].x, points[i].y, points[i+1].x, points[i+1].y, mTemperaturePaint)
@@ -221,17 +221,19 @@ class TimelineDrawer (
             // find place where to indicate max pop
             if (hourlyWeather.pop > maxPop){
                 maxPop = hourlyWeather.pop
-                popText = "$maxPop%"
+                popText = "${(maxPop * 100.0).toInt()}%"
                 maxPopX = point.x - popText.length / 4F * mPrecipicationPaint.textSize
                 maxPopY = point.y + mPrecipicationPaint.textSize
             }
 
             if (hourlyWeather.dt - weather.current.dt > resources.getInteger(R.integer.timeline_scope) * 3600L)
-                break  // we do not need to draw outside of timescope
+                break  // we do not need to draw outside of time scope
         }
-        for (i in 0 until points.size - 1){
-            canvas.drawLine(points[i].x, points[i].y, points[i+1].x, points[i+1].y, mPrecipicationPaint)
-            // ToDo: A spline would look better
+
+        // draw just a bar
+        val barSize = resources.getDimension(R.dimen.precipitation_level_width)
+        for (point in points){
+            canvas.drawLine(point.x - barSize/2, point.y, point.x + barSize/2, point.y, mPrecipicationPaint)
         }
 
         // write pop on highest value for reference
