@@ -21,8 +21,8 @@ object WeatherModel {
     data class Result(
             val lat: String, val lon: String,
             val current: CurrentWeather,
-            val minutely: List<MinutelyWeather>,
-            val hourly: List<HourlyWeather>,
+            val minutely: List<MinutelyWeather>?,
+            val hourly: List<HourlyWeather>?,
             )
     data class CurrentWeather(
         val dt: Long,
@@ -118,6 +118,7 @@ class Weather(
                         {result ->
                             println("Got weather result temp: ${result.current.temp}")
                             weather = result
+                            println("weather: $result ${result.minutely}")
                             status = WeatherQueryStatus.OK
                             errorMessage = ""
                         },

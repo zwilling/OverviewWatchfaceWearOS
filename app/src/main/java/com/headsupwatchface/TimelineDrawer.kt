@@ -92,10 +92,13 @@ class TimelineDrawer (
         // Weather data
         val weatherData = timeline.weather.weather
         if (weatherData != null){
-            drawTemperature(canvas, weatherData)
-            drawProbabliltyOfPrecipitation(canvas, weatherData)
-            if(!mAmbient)
-                drawMinutelyPrecipitation(canvas, weatherData)
+            if (weatherData.hourly != null)
+                drawTemperature(canvas, weatherData)
+            if (weatherData.minutely != null) {
+                drawProbabliltyOfPrecipitation(canvas, weatherData)
+                if (!mAmbient)
+                    drawMinutelyPrecipitation(canvas, weatherData)
+            }
         }
     }
 
@@ -194,7 +197,7 @@ class TimelineDrawer (
 
         // temp graph
         var points = mutableListOf(PointF(nowX, nowY))
-        for (hourlyWeather in weather.hourly){
+        for (hourlyWeather in weather.hourly!!){
             points.add(PointF(calculateCoordinateOfTime(timeOfEpoch(hourlyWeather.dt)), getTempYPos(hourlyWeather.temp)))
             if (hourlyWeather.dt - weather.current.dt > resources.getInteger(R.integer.timeline_scope) * 3600L)
                 break  // we do not need to draw outside of time scope
@@ -216,7 +219,7 @@ class TimelineDrawer (
         var maxPopY = 0.0f
         var popText = ""
 
-        for (hourlyWeather in weather.hourly){
+        for (hourlyWeather in weather.hourly!!){
             val point = PointF(calculateCoordinateOfTime(timeOfEpoch(hourlyWeather.dt)), getPopYPos(hourlyWeather.pop))
             points.add(point)
 
@@ -251,7 +254,7 @@ class TimelineDrawer (
         var maxY = 0.0f
         var maxText = ""
 
-        for (minutelyWeather in weather.minutely){
+        for (minutelyWeather in weather.minutely!!){
             val barX = calculateCoordinateOfTime(timeOfEpoch(minutelyWeather.dt))
             val barHeight = minutelyWeather.precipitation * resources.getDimension(R.dimen.precipitation_minutely_scale_1mm)
 
