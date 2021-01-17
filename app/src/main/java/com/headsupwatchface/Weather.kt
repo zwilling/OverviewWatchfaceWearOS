@@ -101,7 +101,6 @@ class Weather(
         // Todo: get coordinated from device and api key from settings
         // ToDo: settings for units
         val apiKey:String = mSharedPreferences.getString(context.getString(R.string.preference_weather_api_key), "").toString()
-        println("using api key $apiKey")
 
         val latitude = if (mLocationService.lastKnownLocation != null)
             mLocationService.lastKnownLocation!!.latitude

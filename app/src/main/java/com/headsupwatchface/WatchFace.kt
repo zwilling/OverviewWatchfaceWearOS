@@ -108,7 +108,7 @@ class WatchFace : CanvasWatchFaceService() {
         private lateinit var mTimerWeatherUpdate: Timer
 
         // text field shown on the watch face for debugging purposes
-        val debugText = ""
+        var debugText = ""
 
         /**
          * Complication setup
@@ -228,6 +228,7 @@ class WatchFace : CanvasWatchFaceService() {
             mTimerWeatherUpdate = Timer()
             mTimerWeatherUpdate.schedule(timerTask{
                 mTimeline.updateWeather()
+                debugText = "WUpdate: " + String.format("%d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE))
             },
                 resources.getInteger(R.integer.weather_update_delay).toLong(),
                 resources.getInteger(R.integer.weather_update_interval).toLong()
