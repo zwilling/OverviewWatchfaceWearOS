@@ -107,6 +107,9 @@ class WatchFace : CanvasWatchFaceService() {
         private lateinit var mTimerCalendarUpdate: Timer
         private lateinit var mTimerWeatherUpdate: Timer
 
+        // text field shown on the watch face for debugging purposes
+        val debugText = ""
+
         /**
          * Complication setup
          */
@@ -330,6 +333,11 @@ class WatchFace : CanvasWatchFaceService() {
             }
 
             drawDigitalDisplay(canvas)
+
+            if (debugText != ""){
+                canvas.drawText(debugText, resources.getDimension(R.dimen.debug_text_x),
+                        resources.getDimension(R.dimen.debug_text_y), mTimeLineTextPaint)
+            }
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
