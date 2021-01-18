@@ -4,4 +4,10 @@
     <color name="hour_text">#ffffff</color>
     <color name="minute_text">#ffffff</color>
     <color name="second_text">#bbbbbb</color>
+
+    <color name="temperature">#FF5722</color>
+    <color name="temperature_ambient">#bbbbbb</color>
+    <color name="precipitation">#5C5CFF</color>
+    <color name="precipitation_ambient">#bbbbbb</color>
+    <color name="snow">#E1DFDC</color>
 </resources>

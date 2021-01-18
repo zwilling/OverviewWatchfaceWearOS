@@ -4,14 +4,13 @@ import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
-import android.content.pm.PackageManager
+import android.content.SharedPreferences
 import android.content.res.Resources
 import android.database.Cursor
 import android.net.Uri
 import android.provider.CalendarContract
 import android.support.wearable.provider.WearableCalendarContract
 import android.text.format.DateUtils
-import android.widget.Toast
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -45,12 +44,15 @@ private const val PROJECTION_ALL_DAY: Int = 5
  * Model class for a timeline and its content
  */
 class Timeline(
-        val resources: Resources,
-        val contentResolver: ContentResolver, // for querying the calendar
-        val context: Context,  // to check handle permissions
+    val resources: Resources,
+    private val contentResolver: ContentResolver, // for querying the calendar
+    private val context: Context,  // to check handle permissions
+    private val mSharedPreferences: SharedPreferences,
 ) {
     private val mTimeScope: Duration = Duration.ofHours(
             resources.getInteger(R.integer.timeline_scope).toLong())
+
+    val weather: Weather = Weather(context, mSharedPreferences, resources)
 
     /**
      * Calendar Events to be shown on the timeline
@@ -79,8 +81,10 @@ class Timeline(
      * Querying the calendars from the device to update what is represented in the timeline
      */
     fun updateCalendar (){
-        if (!checkPermissions(false))
+        if (!PermissionChecker.checkPermissions(context, false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing))){
             println("Can not update calendar data without permission")
+            return
+        }
 
         // Construct Query
         val uriBuilder = WearableCalendarContract.Instances.CONTENT_URI.buildUpon()
@@ -108,7 +112,6 @@ class Timeline(
 
         if(cur != null){
             val newCalendarEvents: MutableList<Event> = mutableListOf()
-            val timeZoneOffset = ZoneOffset.ofTotalSeconds(TimeZone.getDefault().getOffset(currentTime) / 1000)
 
             while(cur.moveToNext()){
                 // Get the field values
@@ -124,8 +127,8 @@ class Timeline(
                     val event = Event(
                             cur.getLong(PROJECTION_ID_INDEX),
                             cur.getString(PROJECTION_TITLE_INDEX),
-                            LocalDateTime.ofEpochSecond(begin / 1000, 0, timeZoneOffset),
-                            LocalDateTime.ofEpochSecond(end / 1000, 0, timeZoneOffset),
+                            timeOfEpoch(begin / 1000),
+                            timeOfEpoch(end / 1000),
                             cur.getString(PROJECTION_CALENDAR_COLOR_INDEX),
                             allDay,
                     )
@@ -141,22 +144,15 @@ class Timeline(
     }
 
     /**
-     * Check if the watch face has all permissions it needs for the timeline
-     * To grant the permission, the user has to go to the settings because this has to be done
-     * from and activity, and a watch face is only a service
-     *
-     * @param notify: Whether the user should be notified about missing permissions
-     * @return: If all permissions were granted
+     * Lookup weather data and prepare it for the timeline
      */
-    fun checkPermissions(notify: Boolean): Boolean{
-        if (context.checkSelfPermission(Manifest.permission.READ_CALENDAR) ==
-                PackageManager.PERMISSION_DENIED){
-            if(notify)
-                Toast.makeText(context.applicationContext, R.string.permission_calendar_missing,
-                        Toast.LENGTH_LONG).show()
-            return false
+    fun updateWeather() {
+        if (!PermissionChecker.checkPermissions(context, false, mapOf(Manifest.permission.INTERNET to R.string.permission_internet_missing))){
+            println("Can not update weather data without permissions")
+            return
         }
-        return true
+
+        weather.updateWeather()
     }
 }
 

@@ -16,6 +16,8 @@ import android.support.wearable.watchface.WatchFaceService
 import android.support.wearable.watchface.WatchFaceStyle
 import android.view.SurfaceHolder
 import android.widget.Toast
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 
 import java.lang.ref.WeakReference
 import java.util.*
@@ -103,6 +105,10 @@ class WatchFace : CanvasWatchFaceService() {
         private lateinit var mTimelineDrawer: TimelineDrawer
 
         private lateinit var mTimerCalendarUpdate: Timer
+        private lateinit var mTimerWeatherUpdate: Timer
+
+        // text field shown on the watch face for debugging purposes
+        var debugText = ""
 
         /**
          * Complication setup
@@ -130,7 +136,8 @@ class WatchFace : CanvasWatchFaceService() {
             ),
         )
 
-        private val mTimeline = Timeline(resources, contentResolver, this@WatchFace)
+        private val mTimeline = Timeline(resources, contentResolver, this@WatchFace,
+            mSharedPreferences)
 
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
@@ -202,18 +209,29 @@ class WatchFace : CanvasWatchFaceService() {
             }
             setActiveComplications(*mComplications.keys.toIntArray())
 
-            mTimeline.checkPermissions(true)
-            mTimelineDrawer = TimelineDrawer(resources, paintDefault = mMinutePaint,
-                    paintTimelineText = mTimeLineTextPaint)
+            PermissionChecker.checkPermissions(this@WatchFace, true, mapOf(
+                    Manifest.permission.INTERNET to R.string.permission_internet_missing,
+                    Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing,
+            ))
+            mTimelineDrawer = TimelineDrawer(resources, this@WatchFace,
+                paintDefault = mMinutePaint, paintTimelineText = mTimeLineTextPaint)
 
-            // create timer to periodically update the calendar events for the timeline
+            // create timer to periodically update background stuff (calendar, weather, location)
             mTimerCalendarUpdate = Timer()
             mTimerCalendarUpdate.schedule(timerTask{
-                if (mTimeline.checkPermissions(false))
+                if (PermissionChecker.checkPermissions(this@WatchFace, false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
                     mTimeline.updateCalendar()
             },
-                    resources.getInteger(R.integer.calendar_update_delay).toLong(),
-                    resources.getInteger(R.integer.calendar_update_interval).toLong()
+                resources.getInteger(R.integer.calendar_update_delay).toLong(),
+                resources.getInteger(R.integer.calendar_update_interval).toLong()
+            )
+            mTimerWeatherUpdate = Timer()
+            mTimerWeatherUpdate.schedule(timerTask{
+                mTimeline.updateWeather()
+                debugText = "WUpdate: " + String.format("%d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE))
+            },
+                resources.getInteger(R.integer.weather_update_delay).toLong(),
+                resources.getInteger(R.integer.weather_update_interval).toLong()
             )
         }
 
@@ -261,6 +279,8 @@ class WatchFace : CanvasWatchFaceService() {
                 it.drawable.setInAmbientMode(inAmbientMode)
             }
 
+            mTimelineDrawer.onAmbientModeChanged(inAmbientMode)
+
             // Whether the timer should be running depends on whether we"re visible (as well as
             // whether we"re in ambient mode), so we may need to start or stop the timer.
             updateTimer()
@@ -284,7 +304,6 @@ class WatchFace : CanvasWatchFaceService() {
 //                    Toast.makeText(applicationContext, R.string.message, Toast.LENGTH_SHORT)
 //                        .show()
                     // TODO: handle tap on complication
-                    // TODO: check permissions and request if necessary
                 }
             }
             invalidate()
@@ -315,6 +334,11 @@ class WatchFace : CanvasWatchFaceService() {
             }
 
             drawDigitalDisplay(canvas)
+
+            if (debugText != ""){
+                canvas.drawText(debugText, resources.getDimension(R.dimen.debug_text_x),
+                        resources.getDimension(R.dimen.debug_text_y), mTimeLineTextPaint)
+            }
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {

@@ -29,4 +29,12 @@
     <dimen name="event_bar_height">5dp</dimen>
     <dimen name="event_bar_offset">-5dp</dimen>
     <dimen name="event_title_offset">-10dp</dimen>
+
+    <dimen name="temp_scale_40_degrees">40dp</dimen>
+    <dimen name="precipitation_scale_100_percent">-50dp</dimen>
+    <dimen name="precipitation_level_width">5dp</dimen>
+    <dimen name="precipitation_minutely_scale_1mm">5dp</dimen>
+
+    <dimen name="debug_text_x">35dp</dimen>
+    <dimen name="debug_text_y">180dp</dimen>
 </resources>

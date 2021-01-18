@@ -10,7 +10,9 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.wearable.complications.ComplicationHelperActivity
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Switch
+import androidx.core.widget.addTextChangedListener
 import com.headsupwatchface.R
 import com.headsupwatchface.WatchFace
 
@@ -29,6 +31,10 @@ class SettingsActivity : Activity() {
     private lateinit var mButtonComplicationRight : Button
     private lateinit var mSwitch12HourFormat: Switch
     private lateinit var mSwitchCalendarPermission: Switch
+    private lateinit var mSwitchLocationPermission: Switch
+    private lateinit var mEditTextWeatherApiKey: EditText
+
+    private var mPermissionResultViewMap: MutableMap<String, Switch> = mutableMapOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +45,12 @@ class SettingsActivity : Activity() {
         // Getting all needed UI elements
         mButtonComplicationLeft = findViewById(R.id.button_complication_left)
         mButtonComplicationRight = findViewById(R.id.button_complication_right)
-        mSwitch12HourFormat = findViewById(R.id.hour_format_12)
-        mSwitchCalendarPermission = findViewById(R.id.calendar_permission)
+        mEditTextWeatherApiKey = findViewById(R.id.weather_api_key)
+
+        mSwitchCalendarPermission = preparePermissionSwitch(R.id.calendar_permission, Manifest.permission.READ_CALENDAR)
+        mSwitchLocationPermission = preparePermissionSwitch(R.id.location_permission, Manifest.permission.ACCESS_COARSE_LOCATION)
+
+        // ToDo: propper formatting with scrolling or submenus
 
         // For buttons we have to define what happens on a tap
         mButtonComplicationLeft.setOnClickListener {
@@ -51,8 +61,9 @@ class SettingsActivity : Activity() {
         }
 
         // For the switch, we set the starting position and what happens on change
+        mSwitch12HourFormat = findViewById(R.id.hour_format_12)
         mSwitch12HourFormat.isChecked = mSharedPreferences.getBoolean(
-                getString(R.string.preference_hour_format_12_key), false)
+            getString(R.string.preference_hour_format_12_key), false)
         mSwitch12HourFormat.setOnCheckedChangeListener { _, isChecked ->
             with(mSharedPreferences.edit()){
                 putBoolean(getString(R.string.preference_hour_format_12_key), isChecked)
@@ -60,10 +71,13 @@ class SettingsActivity : Activity() {
             }
         }
 
-        mSwitchCalendarPermission.isChecked = checkSelfPermission(Manifest.permission.READ_CALENDAR) ==
-                PackageManager.PERMISSION_GRANTED
-        mSwitchCalendarPermission.setOnCheckedChangeListener { _, _ ->
-            requestPermissions(arrayOf(Manifest.permission.READ_CALENDAR), 1)
+        // skipped fillining in the previous key so that the hint is used properly
+        // mEditTextWeatherApiKey.setText(R.string.preference_weather_api_key)
+        mEditTextWeatherApiKey.addTextChangedListener {
+            with(mSharedPreferences.edit()){
+                putString(getString(R.string.preference_weather_api_key), it.toString())
+                apply()
+            }
         }
     }
 
@@ -80,16 +94,30 @@ class SettingsActivity : Activity() {
         startActivity(intent)
     }
 
+    /**
+     * For the switch, we set the starting position and what happens on change
+     *
+     * @param viewId: Resource id of the GUI element
+     * @param permission: which permission it should request
+     * @return switch view element
+     */
+    private fun preparePermissionSwitch(viewId: Int, permission: String): Switch {
+        val switchView: Switch = findViewById(viewId)
+        switchView.isChecked = checkSelfPermission(permission) ==
+                PackageManager.PERMISSION_GRANTED
+        switchView.setOnCheckedChangeListener { _, _ ->
+            requestPermissions(arrayOf(permission), 1)
+        }
+        // add permission view pair to map so that it can be found when the permission dialog returns
+        mPermissionResultViewMap[permission] = switchView
+        return switchView
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         for (index in permissions.indices){
-            when (permissions[index]){
-                Manifest.permission.READ_CALENDAR -> {
-                    // set switch state, so the user sees that the permission is still active
-                    mSwitchCalendarPermission.isChecked = grantResults[index] == PackageManager.PERMISSION_GRANTED
-                }
-            }
+            mPermissionResultViewMap[permissions[index]]?.isChecked = grantResults[index] == PackageManager.PERMISSION_GRANTED
         }
     }
 }

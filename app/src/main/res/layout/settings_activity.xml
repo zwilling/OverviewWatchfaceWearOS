@@ -4,34 +4,47 @@
     android:layout_height="match_parent"
     android:background="#000000"
     android:gravity="center_horizontal|center_vertical"
+    android:isScrollContainer="true"
+    android:keepScreenOn="true"
     android:orientation="vertical"
     android:scrollIndicators="right"
     android:scrollbarAlwaysDrawVerticalTrack="true"
+    android:scrollbarStyle="outsideInset"
+    android:scrollbars="vertical"
     android:textAlignment="center">
 
     <TextView
-        android:id="@+id/textTitle"
+        android:id="@+id/text_complication"
         style="@android:style/Widget.DeviceDefault.Light.TextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
-        android:text="@string/settings_title" />
+        android:text="@string/settings_complication_title" />
 
-    <Button
-        android:id="@+id/button_complication_left"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="@string/settings_button_complication_left"
-        android:textAlignment="center" />
+        android:orientation="horizontal"
+        style="?android:attr/buttonBarStyle" >
 
-    <Button
-        android:id="@+id/button_complication_right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:text="@string/settings_button_complication_right"
-        android:textAlignment="center" />
+        <Button
+            android:id="@+id/button_complication_left"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center_horizontal"
+            android:text="@string/settings_button_complication_left"
+            android:textAlignment="center" />
+
+        <Button
+            android:id="@+id/button_complication_right"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:gravity="center_horizontal"
+            android:text="@string/settings_button_complication_right"
+            android:textAlignment="center" />
+    </LinearLayout>
 
     <Switch
         android:id="@+id/calendar_permission"
@@ -41,10 +54,34 @@
         android:text="@string/settings_calendar_permission" />
 
     <Switch
+        android:id="@+id/location_permission"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/settings_location_permission" />
+
+    <Switch
         android:id="@+id/hour_format_12"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checked="false"
         android:text="@string/settings_12_hour_format_switch" />
+
+    <TextView
+        android:id="@+id/text_weather"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="clip_horizontal"
+        android:text="@string/settings_weather_title"
+        android:textAlignment="center"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/weather_api_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="@string/settings_weather_input_api_key_hint"
+        android:hint="@string/settings_weather_input_api_key_hint"
+        android:inputType="text" />
 
 </LinearLayout>
