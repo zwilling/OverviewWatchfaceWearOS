@@ -1,6 +1,7 @@
 package com.headsupwatchface
 
 
+import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Resources
@@ -95,8 +96,14 @@ class Weather(
 
     private val mLocationService = LocationService(context, resources)
 
-    fun updateWeather(){
-        println("Updating weather data")
+    /**
+     * Update the weather model by querying the cloud
+     */
+    fun update(){
+        if (!PermissionChecker.checkPermissions(context, false, mapOf(Manifest.permission.INTERNET to R.string.permission_internet_missing))){
+            println("Can not update weather data without permissions")
+            return
+        }
 
         // Todo: get coordinated from device and api key from settings
         // ToDo: settings for units

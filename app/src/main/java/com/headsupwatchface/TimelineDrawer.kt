@@ -76,7 +76,7 @@ class TimelineDrawer (
         }
 
         // Calendar Events
-        for (event in timeline.calendarEvents){
+        for (event in timeline.meetingCalendar.calendarEvents){
             val coordinateBegin = calculateCoordinateOfTime(event.begin)
             val coordinateEnd = calculateCoordinateOfTime(event.end)
             val eventBar = TimelineBar(

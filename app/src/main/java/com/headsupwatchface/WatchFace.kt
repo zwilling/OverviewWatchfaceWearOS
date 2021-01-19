@@ -2,7 +2,6 @@ package com.headsupwatchface
 
 import android.Manifest
 import android.content.*
-import android.content.pm.PackageManager
 import android.graphics.*
 import android.os.Bundle
 import android.os.Handler
@@ -15,9 +14,6 @@ import android.support.wearable.watchface.CanvasWatchFaceService
 import android.support.wearable.watchface.WatchFaceService
 import android.support.wearable.watchface.WatchFaceStyle
 import android.view.SurfaceHolder
-import android.widget.Toast
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
 
 import java.lang.ref.WeakReference
 import java.util.*
@@ -220,14 +216,14 @@ class WatchFace : CanvasWatchFaceService() {
             mTimerCalendarUpdate = Timer()
             mTimerCalendarUpdate.schedule(timerTask{
                 if (PermissionChecker.checkPermissions(this@WatchFace, false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
-                    mTimeline.updateCalendar()
+                    mTimeline.meetingCalendar.updateCalendar()
             },
                 resources.getInteger(R.integer.calendar_update_delay).toLong(),
                 resources.getInteger(R.integer.calendar_update_interval).toLong()
             )
             mTimerWeatherUpdate = Timer()
             mTimerWeatherUpdate.schedule(timerTask{
-                mTimeline.updateWeather()
+                mTimeline.weather.update()
                 debugText = "WUpdate: " + String.format("%d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE))
             },
                 resources.getInteger(R.integer.weather_update_delay).toLong(),
