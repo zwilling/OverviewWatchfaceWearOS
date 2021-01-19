@@ -46,6 +46,10 @@ class TimelineDrawer (
         color = ContextCompat.getColor(context, R.color.precipitation)
         textSize = resources.getDimension(R.dimen.hour_mark_font_size)
     }
+    private var mEventTextPaint = Paint().apply {
+        color = ContextCompat.getColor(context, R.color.event_text)
+        textSize = paintTimelineText.textSize
+    }
 
     /**
      * Main function to draw the timeline on the watch face canvas
@@ -86,7 +90,7 @@ class TimelineDrawer (
             )
             drawEventBarOnTimeline(canvas, eventBar)
             drawTextOnMark(canvas, event.title, event.begin,
-                    resources.getDimension(R.dimen.event_title_offset), centered = false)
+                    resources.getDimension(R.dimen.event_title_offset), mEventTextPaint, centered = false)
         }
 
         // Weather data
@@ -125,6 +129,8 @@ class TimelineDrawer (
             else ContextCompat.getColor(context, R.color.temperature_ambient)
         mPrecipicationPaint.color = if (!mAmbient) ContextCompat.getColor(context, R.color.precipitation)
             else ContextCompat.getColor(context, R.color.precipitation_ambient)
+        mEventTextPaint.color = if (!mAmbient) ContextCompat.getColor(context, R.color.event_text)
+            else ContextCompat.getColor(context, R.color.event_text_ambient)
     }
 
     /**
@@ -164,7 +170,7 @@ class TimelineDrawer (
      */
     private fun drawTimeOnMark(canvas: Canvas, time: LocalDateTime, offset: Float){
         val text = time.hour.toString()
-        drawTextOnMark(canvas, text, time, offset)
+        drawTextOnMark(canvas, text, time, offset, paintTimelineText)
     }
 
     /**
@@ -173,13 +179,15 @@ class TimelineDrawer (
      * @param time Where it should be written on the timeline
      * @param offset Offset above or below the timeline
      * @param centered If the text should be centered above the time
+     * @param paint The paint to use for drawing
      */
-    private fun drawTextOnMark(canvas: Canvas, text: String, time: LocalDateTime, offset: Float, centered: Boolean = true){
+    private fun drawTextOnMark(canvas: Canvas, text: String, time: LocalDateTime, offset: Float,
+                               paint: Paint, centered: Boolean = true){
         var xPos = calculateCoordinateOfTime(time)
         if (centered)
-            xPos -= text.length / 4F * paintTimelineText.textSize
+            xPos -= text.length / 4F * paint.textSize
         val yPos = mCenterY + offset
-        canvas.drawText(text, xPos, yPos, paintTimelineText)
+        canvas.drawText(text, xPos, yPos, paint)
     }
 
     /**

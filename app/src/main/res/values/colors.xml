@@ -10,4 +10,7 @@
     <color name="precipitation">#5C5CFF</color>
     <color name="precipitation_ambient">#bbbbbb</color>
     <color name="snow">#E1DFDC</color>
+
+    <color name="event_text">#666666</color>
+    <color name="event_text_ambient">#bbbbbb</color>
 </resources>
