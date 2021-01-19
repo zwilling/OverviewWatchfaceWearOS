@@ -75,6 +75,11 @@ class MeetingCalendar (
             return
         }
 
+        if(resources.getBoolean(R.bool.simulated_calendar)){
+            calendarEvents = getSimulatedCalendar()
+            return
+        }
+
         // Construct Query
         val uriBuilder = WearableCalendarContract.Instances.CONTENT_URI.buildUpon()
         val now: Long = Date().time
@@ -130,5 +135,21 @@ class MeetingCalendar (
         }
         else
             println("Calendar query returned no cursor")
+    }
+
+    /**
+     * For debugging and testing this function yields a test event list
+     * You can enable it in the preferences.xml
+     */
+    private fun getSimulatedCalendar () : MutableList<Event>{
+        println("Using simulated calendar")
+        return mutableListOf(
+                Event(0, "test0",
+                        LocalDateTime.now(), LocalDateTime.now().plusHours(1),
+                        "blue",false),
+                Event(1, "test0",
+                        LocalDateTime.now().plusHours(2), LocalDateTime.now().plusHours(4),
+                        "blue",false),
+        )
     }
 }
