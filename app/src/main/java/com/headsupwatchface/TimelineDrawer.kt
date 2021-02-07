@@ -6,8 +6,8 @@ import android.graphics.*
 import androidx.core.content.ContextCompat
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.*
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
@@ -27,7 +27,8 @@ class TimelineDrawer (
     private val mLength: Float = resources.getDimension(R.dimen.timeline_length)
     private val mArrowLength: Float = resources.getDimension(R.dimen.timeline_arrow_length)
 
-    data class TimelineBar (val x:Float, val size: Float, val thickness:Float)
+    data class TimelineBar (val x:Float, val size: Float, val thickness:Float,
+                            val stackingHeight:Int = 0)
     private val mNowBar = TimelineBar(
             x = resources.getDimension(R.dimen.timeline_now_bar_x),
             size = resources.getDimension(R.dimen.timeline_now_bar_size),
@@ -46,11 +47,15 @@ class TimelineDrawer (
         color = ContextCompat.getColor(context, R.color.precipitation)
         textSize = resources.getDimension(R.dimen.hour_mark_font_size)
     }
+    private var mEventTextPaint = Paint().apply {
+        color = ContextCompat.getColor(context, R.color.event_text)
+        textSize = paintTimelineText.textSize
+    }
 
     /**
      * Main function to draw the timeline on the watch face canvas
      */
-    fun draw(canvas: Canvas, timeline: Timeline, ambient: Boolean){
+    fun draw(canvas: Canvas, timeline: Timeline){
 
         // The line itself
         canvas.drawLine(0F, mCenterY, mLength, mCenterY, paintDefault)
@@ -75,19 +80,7 @@ class TimelineDrawer (
             drawTimeOnMark(canvas, hourMark, resources.getDimension(R.dimen.hour_mark_text_offset))
         }
 
-        // Calendar Events
-        for (event in timeline.calendarEvents){
-            val coordinateBegin = calculateCoordinateOfTime(event.begin)
-            val coordinateEnd = calculateCoordinateOfTime(event.end)
-            val eventBar = TimelineBar(
-                    x = coordinateBegin,
-                    size = resources.getDimension(R.dimen.event_bar_height),
-                    thickness = coordinateEnd - coordinateBegin
-            )
-            drawEventBarOnTimeline(canvas, eventBar)
-            drawTextOnMark(canvas, event.title, event.begin,
-                    resources.getDimension(R.dimen.event_title_offset), centered = false)
-        }
+        drawCalendarEvents(canvas, timeline)
 
         // Weather data
         val weatherData = timeline.weather.weather
@@ -125,15 +118,31 @@ class TimelineDrawer (
             else ContextCompat.getColor(context, R.color.temperature_ambient)
         mPrecipicationPaint.color = if (!mAmbient) ContextCompat.getColor(context, R.color.precipitation)
             else ContextCompat.getColor(context, R.color.precipitation_ambient)
+        mEventTextPaint.color = if (!mAmbient) ContextCompat.getColor(context, R.color.event_text)
+            else ContextCompat.getColor(context, R.color.event_text_ambient)
     }
 
     /**
      * Calculating where on the timeline a point in time should be drawn
+     *
+     * @param time Time to find the coordinate for
+     * @return x coordinate corresponding to that time
      */
     private fun calculateCoordinateOfTime(time: LocalDateTime): Float{
         val timeDistance = Duration.between(LocalDateTime.now(), time)
         val pixelDistFrom0 = timeDistance.toMillis().toFloat() / mTimeScope.toMillis().toFloat() * (mLength - mNowBar.x)
         return pixelDistFrom0 + mNowBar.x
+    }
+
+    /**
+     * Calculating which time corresponds to a coordinate on the timeline
+     * @param x Coordinate to find the corresponding time for
+     * @return LocalDateTime at x
+     */
+    private fun calculateTimeOfCoordinate(x: Float): LocalDateTime{
+        val pixelDistFromNow = x - mNowBar.x
+        val timeDistFromNow = Duration.ofMillis((pixelDistFromNow * mTimeScope.toMillis() / (mLength - mNowBar.x)).toLong())
+        return LocalDateTime.now() + timeDistFromNow
     }
 
     /**
@@ -149,12 +158,15 @@ class TimelineDrawer (
 
     /**
      * Draws an event-box on the timeline
+     *
+     * @param canvas Canvas onject to draw on
+     * @param timelineBar
      */
     private fun drawEventBarOnTimeline(canvas: Canvas, timelineBar: TimelineBar){
         val barRect = RectF(timelineBar.x,
-                mCenterY - timelineBar.size,
+                mCenterY - timelineBar.size - timelineBar.stackingHeight * timelineBar.size,
                 timelineBar.x + timelineBar.thickness,
-                mCenterY)
+                mCenterY - timelineBar.stackingHeight * timelineBar.size)
         canvas.drawRect(barRect, paintDefault)
     }
 
@@ -164,7 +176,7 @@ class TimelineDrawer (
      */
     private fun drawTimeOnMark(canvas: Canvas, time: LocalDateTime, offset: Float){
         val text = time.hour.toString()
-        drawTextOnMark(canvas, text, time, offset)
+        drawTextOnMark(canvas, text, time, offset, paintTimelineText)
     }
 
     /**
@@ -173,13 +185,15 @@ class TimelineDrawer (
      * @param time Where it should be written on the timeline
      * @param offset Offset above or below the timeline
      * @param centered If the text should be centered above the time
+     * @param paint The paint to use for drawing
      */
-    private fun drawTextOnMark(canvas: Canvas, text: String, time: LocalDateTime, offset: Float, centered: Boolean = true){
+    private fun drawTextOnMark(canvas: Canvas, text: String, time: LocalDateTime, offset: Float,
+                               paint: Paint, centered: Boolean = true){
         var xPos = calculateCoordinateOfTime(time)
         if (centered)
-            xPos -= text.length / 4F * paintTimelineText.textSize
+            xPos -= getTextPixelLength(text, paint)
         val yPos = mCenterY + offset
-        canvas.drawText(text, xPos, yPos, paintTimelineText)
+        canvas.drawText(text, xPos, yPos, paint)
     }
 
     /**
@@ -192,7 +206,7 @@ class TimelineDrawer (
         val nowText = weather.current.temp.roundToInt().toString() + context.getString(R.string.weather_units_display)
 
         // text next to current temp for scale
-        val nowTextX = nowX - nowText.length / 4F * mTemperaturePaint.textSize
+        val nowTextX = nowX - getTextPixelLength(nowText, mTemperaturePaint)
         canvas.drawText(nowText, nowTextX, nowY, mTemperaturePaint)
 
         // temp graph
@@ -227,7 +241,7 @@ class TimelineDrawer (
             if (hourlyWeather.pop > maxPop){
                 maxPop = hourlyWeather.pop
                 popText = "${(maxPop * 100.0).toInt()}%"
-                maxPopX = point.x - popText.length / 4F * mPrecipicationPaint.textSize
+                maxPopX = point.x - getTextPixelLength(popText, mPrecipicationPaint)
                 maxPopY = point.y + mPrecipicationPaint.textSize
             }
 
@@ -265,7 +279,7 @@ class TimelineDrawer (
             if (minutelyWeather.precipitation > maxPrecipitation){
                 maxPrecipitation = minutelyWeather.precipitation
                 maxText = "${maxPrecipitation.toInt()}mm"
-                maxX = barX - maxText.length / 4F * mPrecipicationPaint.textSize
+                maxX = barX - getTextPixelLength(maxText, mPrecipicationPaint)
                 maxY = mCenterY + barHeight + mPrecipicationPaint.textSize
             }
         }
@@ -294,4 +308,54 @@ class TimelineDrawer (
         return mCenterY - resources.getDimension(R.dimen.precipitation_scale_100_percent) * pop
     }
 
+    /**
+     * Estimates the pixel size of drawn text
+     * @param text: The text to measure
+     * @param paint: Paint used for drawing (including font size)
+     * @return: Pixel size of drawn text as Float
+     */
+    private fun getTextPixelLength(text: String, paint: Paint): Float{
+        return text.length / 2.0F * paint.textSize
+    }
+
+    /**
+     * Drawing and layout logic for where to draw calendar events on the timeline
+     *
+     * We try to draw events directly on top of the timeline,
+     * but stack them up if the place is already occupied.
+     * This way no two events are overlaying each other
+     */
+    private fun drawCalendarEvents(canvas: Canvas, timeline: Timeline){
+        val rowsBlockedUntil = mutableListOf<LocalDateTime>()
+
+        for (event in timeline.meetingCalendar.calendarEvents){
+            val coordinateBegin = calculateCoordinateOfTime(event.begin)
+            val coordinateEnd = calculateCoordinateOfTime(event.end)
+
+            // Find lowest row, which is not blocked at event start
+            var rowToUse = 0
+            while(rowToUse < rowsBlockedUntil.size && rowsBlockedUntil[rowToUse] > event.begin)
+                rowToUse++
+            // Reserve found row until event end or used up space for event title
+            val titleTextEnd = calculateTimeOfCoordinate(
+                    calculateCoordinateOfTime(event.begin) + getTextPixelLength(event.title, mEventTextPaint))
+            var endOfEventEntry = if (event.end > titleTextEnd) event.end else titleTextEnd
+            if (rowToUse < rowsBlockedUntil.size)
+                rowsBlockedUntil[rowToUse] = endOfEventEntry
+            else
+                rowsBlockedUntil.add(endOfEventEntry)
+
+            val eventBar = TimelineBar(
+                    x = coordinateBegin,
+                    size = resources.getDimension(R.dimen.event_bar_height),
+                    thickness = coordinateEnd - coordinateBegin,
+                    stackingHeight = rowToUse,
+            )
+
+            drawEventBarOnTimeline(canvas, eventBar)
+            drawTextOnMark(canvas, event.title, event.begin,
+                    resources.getDimension(R.dimen.event_title_offset) - rowToUse * eventBar.size,
+                    mEventTextPaint, centered = false)
+        }
+    }
 }
