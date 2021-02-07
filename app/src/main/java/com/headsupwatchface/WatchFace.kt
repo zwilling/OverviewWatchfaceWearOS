@@ -224,7 +224,7 @@ class WatchFace : CanvasWatchFaceService() {
             mTimerWeatherUpdate = Timer()
             mTimerWeatherUpdate.schedule(timerTask{
                 mTimeline.weather.update()
-                debugText = "WUpdate: " + String.format("%d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE))
+//                debugText = "WUpdate: " + String.format("%d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE))
             },
                 resources.getInteger(R.integer.weather_update_delay).toLong(),
                 resources.getInteger(R.integer.weather_update_interval).toLong()

@@ -32,10 +32,10 @@
                 android:resource="@xml/watch_face" />
             <meta-data
                 android:name="com.google.android.wearable.watchface.preview"
-                android:resource="@drawable/preview_digital" />
+                android:resource="@drawable/preview" />
             <meta-data
                 android:name="com.google.android.wearable.watchface.preview_circular"
-                android:resource="@drawable/preview_digital_circular" />
+                android:resource="@drawable/preview" />
 
             <!-- Specifying that what should be started on clicking the watch face configuration-->
             <meta-data
