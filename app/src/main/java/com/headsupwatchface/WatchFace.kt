@@ -322,7 +322,7 @@ class WatchFace : CanvasWatchFaceService() {
                 )
             }
 
-            mTimelineDrawer.draw(canvas, mTimeline, mAmbient)
+            mTimelineDrawer.draw(canvas, mTimeline)
 
             // draw complications
             mComplications.values.forEach {

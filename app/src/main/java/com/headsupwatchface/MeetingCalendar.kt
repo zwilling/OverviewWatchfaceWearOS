@@ -135,6 +135,9 @@ class MeetingCalendar (
         }
         else
             println("Calendar query returned no cursor")
+
+        // sort for a consistent handling in later rendering
+        calendarEvents.sortWith(compareBy ({ it.title }, { it.begin.toEpochSecond(getTimeZoneOffset()) }))
     }
 
     /**
@@ -144,10 +147,13 @@ class MeetingCalendar (
     private fun getSimulatedCalendar () : MutableList<Event>{
         println("Using simulated calendar")
         return mutableListOf(
-                Event(0, "test0",
+                Event(0, "test meeting with very long title text",
                         LocalDateTime.now(), LocalDateTime.now().plusHours(1),
                         "blue",false),
-                Event(1, "test0",
+                Event(1, "test1",
+                        LocalDateTime.now().plusMinutes(30), LocalDateTime.now().plusMinutes(90),
+                        "blue",false),
+                Event(2, "test2",
                         LocalDateTime.now().plusHours(2), LocalDateTime.now().plusHours(4),
                         "blue",false),
         )
