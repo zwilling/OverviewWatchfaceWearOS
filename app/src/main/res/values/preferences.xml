@@ -4,5 +4,5 @@
     <bool name="hour_format_12_default">false</bool>
     <string name="preference_weather_api_key">OpenWeatherMap API key</string>
 
-    <bool name="simulated_calendar">true</bool>
+    <bool name="simulated_calendar">false</bool>
 </resources>
