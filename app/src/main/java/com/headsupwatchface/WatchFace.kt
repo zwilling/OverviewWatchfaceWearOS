@@ -213,6 +213,7 @@ class WatchFace : CanvasWatchFaceService() {
                 paintDefault = mMinutePaint, paintTimelineText = mTimeLineTextPaint)
 
             // create timer to periodically update background stuff (calendar, weather, location)
+            println("Create: start timers")
             mTimerCalendarUpdate = Timer()
             mTimerCalendarUpdate.schedule(timerTask{
                 if (PermissionChecker.checkPermissions(this@WatchFace, false, mapOf(Manifest.permission.READ_CALENDAR to R.string.permission_calendar_missing)))
@@ -224,6 +225,7 @@ class WatchFace : CanvasWatchFaceService() {
             mTimerWeatherUpdate = Timer()
             mTimerWeatherUpdate.schedule(timerTask{
                 mTimeline.weather.update()
+                println("updating weather")
 //                debugText = "WUpdate: " + String.format("%d:%02d", mCalendar.get(Calendar.HOUR_OF_DAY), mCalendar.get(Calendar.MINUTE))
             },
                 resources.getInteger(R.integer.weather_update_delay).toLong(),
@@ -233,6 +235,11 @@ class WatchFace : CanvasWatchFaceService() {
 
         override fun onDestroy() {
             mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME)
+            println("Destroy: stopping timers")
+            for (timer in listOf(mTimerCalendarUpdate, mTimerWeatherUpdate)){
+                timer.cancel()
+            }
+
             super.onDestroy()
         }
 

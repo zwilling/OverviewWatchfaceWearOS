@@ -100,6 +100,7 @@ class Weather(
      * Update the weather model by querying the cloud
      */
     fun update(){
+        println("Weather update called", )
         if (!PermissionChecker.checkPermissions(context, false, mapOf(Manifest.permission.INTERNET to R.string.permission_internet_missing))){
             println("Can not update weather data without permissions")
             return
